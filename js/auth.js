@@ -168,6 +168,7 @@ async function handleLogin(e) {
 async function handleRegister(e) {
   e.preventDefault();
   
+<<<<<<< HEAD
   try {
     const fullName = document.getElementById('fullName').value.trim();
     const phone = document.getElementById('phone').value.trim();
@@ -246,5 +247,80 @@ async function handleRegister(e) {
   } catch (error) {
     alert("Caught Error: " + error.name + " - " + error.message);
     console.error(error);
+=======
+  const fullName = document.getElementById('fullName').value.trim();
+  const phone = document.getElementById('phone').value.trim();
+  const password = document.getElementById('password').value;
+  const confirmPassword = document.getElementById('confirmPassword').value;
+  const termsAgree = document.getElementById('termsAgree').checked;
+  
+  if (!fullName || !phone || !password || !confirmPassword) {
+    showNotification('Please fill in all fields', 'error');
+    return;
+  }
+  
+  if (password !== confirmPassword) {
+    showNotification('Passwords do not match', 'error');
+    return;
+  }
+  
+  if (!validatePhone(phone)) {
+    showNotification('Please enter a valid 10-digit phone number', 'error');
+    return;
+  }
+  
+  if (password.length <= 5) {
+    showNotification('Password must be greater than 5 digits', 'error');
+    return;
+  }
+  
+  if (!termsAgree) {
+    showNotification('Please agree to the terms and conditions', 'error');
+    return;
+  }
+  
+  // Check if phone number is already registered
+  const { data: existingUser, error: checkError } = await supabaseClient
+    .from('profiles')
+    .select('id')
+    .eq('phone', phone)
+    .maybeSingle();
+    
+  if (existingUser) {
+    showNotification('This phone number is already registered', 'error');
+    return;
+  }
+  
+  // Hash password
+  const hashedPassword = await hashPassword(password);
+  
+  // Insert profile data directly into profiles table
+  const { data: profileData, error: profileError } = await supabaseClient
+    .from('profiles')
+    .insert([
+      { 
+        full_name: fullName, 
+        phone: phone,
+        password_hash: hashedPassword,
+        wallet_balance: 10000.00 // Default starter balance
+      }
+    ])
+    .select();
+      
+  if (profileError) {
+    console.error(profileError);
+    showNotification('Registration failed: ' + profileError.message, 'error');
+    return;
+  }
+  
+  if (profileData && profileData[0]) {
+    // Save user ID to localStorage session
+    localStorage.setItem('paymoney_user_id', profileData[0].id);
+    showNotification('Registration successful! Redirecting...');
+    
+    setTimeout(() => {
+      window.location.href = 'dashboard.html';
+    }, 1500);
+>>>>>>> 4d1f15da979bd23d8c97cb541c86049cef02d499
   }
 }
