@@ -338,36 +338,37 @@ async function handleSendMoney(e) {
     return;
   }
   
-  // Debit sender
-  const newSenderBalance = currentBalance - parseFloat(sendAmount);
-  await updateWalletBalance(newSenderBalance);
-  
-  // Credit receiver
-  const newReceiverBalance = parseFloat(receiverData.wallet_balance) + parseFloat(sendAmount);
-  await supabaseClient
-    .from('profiles')
-    .update({ wallet_balance: newReceiverBalance })
-    .eq('id', receiverData.id);
-  
-  // Add transaction record
-  await addTransaction(
-    parseFloat(sendAmount), 
-    'peer_to_peer', 
-    `Sent to ${recipientMobile}${sendNote ? ` - ${sendNote}` : ''}`,
-    receiverData.id
-  );
-  
-  // Close modal
-  const sendMoneyModal = document.getElementById('sendMoneyModal');
-  sendMoneyModal.style.display = 'none';
-  
-  // Reset form
-  const sendMoneyForm = document.getElementById('sendMoneyForm');
-  if (sendMoneyForm) sendMoneyForm.reset();
-  
-  showNotification(`Sent ₹${formatCurrency(sendAmount)} successfully`);
-  
-  // Reload UI
-  await loadWalletData();
-  await loadTransactions();
+  // Debit sender and Credit receiver within UPI verification
+  requireUpiVerification(parseFloat(sendAmount), async () => {
+    const newSenderBalance = currentBalance - parseFloat(sendAmount);
+    await updateWalletBalance(newSenderBalance);
+    
+    const newReceiverBalance = parseFloat(receiverData.wallet_balance) + parseFloat(sendAmount);
+    await supabaseClient
+      .from('profiles')
+      .update({ wallet_balance: newReceiverBalance })
+      .eq('id', receiverData.id);
+    
+    // Add transaction record
+    await addTransaction(
+      parseFloat(sendAmount), 
+      'peer_to_peer', 
+      `Sent to ${recipientMobile}${sendNote ? ` - ${sendNote}` : ''}`,
+      receiverData.id
+    );
+    
+    // Close modal
+    const sendMoneyModal = document.getElementById('sendMoneyModal');
+    if (sendMoneyModal) sendMoneyModal.style.display = 'none';
+    
+    // Reset form
+    const sendMoneyForm = document.getElementById('sendMoneyForm');
+    if (sendMoneyForm) sendMoneyForm.reset();
+    
+    showNotification(`Sent ₹${formatCurrency(sendAmount)} successfully`);
+    
+    // Reload UI
+    await loadWalletData();
+    await loadTransactions();
+  });
 }

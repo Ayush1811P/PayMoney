@@ -391,120 +391,66 @@ async function handleSendUpi(e) {
     return;
   }
   
-  // Save details to pending transaction
-  pendingPayment = {
-    receiverId: receiverData.id,
-    receiverUpiId: receiverData.upi_id || recipientUpiId,
-    amount: parseFloat(upiSendAmount),
-    note: note
-  };
-  
-  // Populate PIN modal
-  document.getElementById('pinRecipient').textContent = pendingPayment.receiverUpiId;
-  document.getElementById('pinAmount').textContent = '₹' + formatCurrency(pendingPayment.amount);
-  document.getElementById('upiPin').value = '';
-  
-  // Hide Send modal and show PIN modal
-  document.getElementById('sendUpiModal').style.display = 'none';
-  document.getElementById('upiPinModal').style.display = 'block';
+  requireUpiVerification(parseFloat(upiSendAmount), async () => {
+    // Deduct sender balance
+    const newSenderBalance = currentBalance - parseFloat(upiSendAmount);
+    await updateWalletBalance(newSenderBalance);
+    
+    // Fetch receiver balance again to prevent race conditions
+    const { data: receiverProfile } = await supabaseClient
+      .from('profiles')
+      .select('wallet_balance')
+      .eq('id', receiverData.id)
+      .single();
+      
+    // Credit receiver
+    const newReceiverBalance = parseFloat(receiverProfile.wallet_balance) + parseFloat(upiSendAmount);
+    await supabaseClient
+      .from('profiles')
+      .update({ wallet_balance: newReceiverBalance })
+      .eq('id', receiverData.id);
+    
+    // Add transaction record
+    const finalReceiverUpiId = receiverData.upi_id || recipientUpiId;
+    await addTransaction(
+      parseFloat(upiSendAmount), 
+      'peer_to_peer', 
+      `UPI Payment to ${finalReceiverUpiId}${note ? ` - ${note}` : ''}`,
+      receiverData.id
+    );
+    
+    // Reset and hide Send modal
+    document.getElementById('sendUpiModal').style.display = 'none';
+    const sendUpiForm = document.getElementById('sendUpiForm');
+    if (sendUpiForm) sendUpiForm.reset();
+    
+    // Populate success receipt details
+    const successUpiRecipient = document.getElementById('successUpiRecipient');
+    const successUpiAmount = document.getElementById('successUpiAmount');
+    const upiTxnId = document.getElementById('upiTransactionId');
+    const upiTxnTime = document.getElementById('upiTransactionTime');
+    
+    const genTxnId = 'TXN' + Math.floor(Math.random() * 1000000000);
+    const genTime = new Date().toLocaleString();
+    
+    if (successUpiRecipient) successUpiRecipient.textContent = finalReceiverUpiId;
+    if (successUpiAmount) successUpiAmount.textContent = `₹${formatCurrency(upiSendAmount)}`;
+    if (upiTxnId) upiTxnId.textContent = genTxnId;
+    if (upiTxnTime) upiTxnTime.textContent = genTime;
+    
+    // Display success modal
+    const upiSuccessModal = document.getElementById('upiSuccessModal');
+    if (upiSuccessModal) upiSuccessModal.style.display = 'block';
+    
+    showNotification(`Payment of ₹${formatCurrency(upiSendAmount)} successful`);
+    
+    await loadUpiTransactions();
+  });
 }
 
+// Deprecated: old custom PIN flow
 async function handleConfirmPinPayment() {
-  if (!pendingPayment) return;
-  
-  const enteredPin = document.getElementById('upiPin').value;
-  if (!enteredPin || !/^[0-9]{4}$/.test(enteredPin)) {
-    showNotification('Please enter a valid 4-digit UPI PIN', 'error');
-    return;
-  }
-  
-  const confirmPinBtn = document.getElementById('confirmPinBtn');
-  confirmPinBtn.disabled = true;
-  confirmPinBtn.textContent = 'Processing...';
-  
-  const user = await getUser();
-  const hashedPin = await hashPassword(enteredPin);
-  
-  // Fetch sender's stored pin
-  const { data: senderProfile } = await supabaseClient
-    .from('profiles')
-    .select('upi_pin, wallet_balance')
-    .eq('id', user.id)
-    .single();
-    
-  if (!senderProfile || senderProfile.upi_pin !== hashedPin) {
-    showNotification('Incorrect UPI PIN', 'error');
-    confirmPinBtn.disabled = false;
-    confirmPinBtn.textContent = 'Confirm Payment';
-    document.getElementById('upiPin').value = '';
-    return;
-  }
-  
-  const currentBalance = parseFloat(senderProfile.wallet_balance);
-  if (pendingPayment.amount > currentBalance) {
-    showNotification('Insufficient balance', 'error');
-    document.getElementById('upiPinModal').style.display = 'none';
-    confirmPinBtn.disabled = false;
-    confirmPinBtn.textContent = 'Confirm Payment';
-    return;
-  }
-  
-  // Deduct sender balance
-  const newSenderBalance = currentBalance - pendingPayment.amount;
-  await updateWalletBalance(newSenderBalance);
-  
-  // Fetch receiver balance again to prevent race conditions
-  const { data: receiverProfile } = await supabaseClient
-    .from('profiles')
-    .select('wallet_balance')
-    .eq('id', pendingPayment.receiverId)
-    .single();
-    
-  // Credit receiver
-  const newReceiverBalance = parseFloat(receiverProfile.wallet_balance) + pendingPayment.amount;
-  await supabaseClient
-    .from('profiles')
-    .update({ wallet_balance: newReceiverBalance })
-    .eq('id', pendingPayment.receiverId);
-  
-  // Add transaction record
-  await addTransaction(
-    pendingPayment.amount, 
-    'peer_to_peer', 
-    `UPI Payment to ${pendingPayment.receiverUpiId}${pendingPayment.note ? ` - ${pendingPayment.note}` : ''}`,
-    pendingPayment.receiverId
-  );
-  
-  // Reset and hide PIN modal
-  document.getElementById('upiPinModal').style.display = 'none';
-  const sendUpiForm = document.getElementById('sendUpiForm');
-  if (sendUpiForm) sendUpiForm.reset();
-  
-  // Populate success receipt details
-  const successUpiRecipient = document.getElementById('successUpiRecipient');
-  const successUpiAmount = document.getElementById('successUpiAmount');
-  const upiTxnId = document.getElementById('upiTransactionId');
-  const upiTxnTime = document.getElementById('upiTransactionTime');
-  
-  const genTxnId = 'TXN' + Math.floor(Math.random() * 1000000000);
-  const genTime = new Date().toLocaleString();
-  
-  if (successUpiRecipient) successUpiRecipient.textContent = pendingPayment.receiverUpiId;
-  if (successUpiAmount) successUpiAmount.textContent = `₹${formatCurrency(pendingPayment.amount)}`;
-  if (upiTxnId) upiTxnId.textContent = genTxnId;
-  if (upiTxnTime) upiTxnTime.textContent = genTime;
-  
-  // Display success modal
-  const upiSuccessModal = document.getElementById('upiSuccessModal');
-  if (upiSuccessModal) upiSuccessModal.style.display = 'block';
-  
-  showNotification(`Payment of ₹${formatCurrency(pendingPayment.amount)} successful`);
-  
-  confirmPinBtn.disabled = false;
-  confirmPinBtn.textContent = 'Confirm Payment';
-  pendingPayment = null;
-  
-  await loadUpiTransactions();
+  console.warn("handleConfirmPinPayment is deprecated. Use requireUpiVerification instead.");
 }
 
 async function downloadUpiReceipt() {

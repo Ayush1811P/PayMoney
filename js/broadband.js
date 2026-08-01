@@ -259,37 +259,40 @@ async function handleConfirmRecharge() {
       return;
     }
     
-    const newBalance = currentBalance - rechargeAmount;
-    await updateWalletBalance(newBalance);
-    
-    await addTransaction(
-      rechargeAmount,
-      'recharge',
-      `Broadband Bill - Account: ${currentBroadband.accountId} (${currentBroadband.operatorName})`
-    );
-    
-    document.getElementById('rechargeConfirmation').classList.add('hidden');
-    
-    const successAccountId = document.getElementById('successAccountId');
-    const successOperator = document.getElementById('successOperator');
-    const successAmount = document.getElementById('successAmount');
-    const transactionId = document.getElementById('transactionId');
-    const transactionTime = document.getElementById('transactionTime');
-    
-    const genTxnId = 'TXN' + Math.floor(Math.random() * 1000000000);
-    const genTime = new Date().toLocaleString();
-    
-    if (successAccountId) successAccountId.textContent = currentBroadband.accountId;
-    if (successOperator) successOperator.textContent = currentBroadband.operatorName;
-    if (successAmount) successAmount.textContent = `₹${rechargeAmount}`;
-    if (transactionId) transactionId.textContent = genTxnId;
-    if (transactionTime) transactionTime.textContent = genTime;
-    
-    document.getElementById('rechargeSuccessModal').style.display = 'block';
+    requireUpiVerification(rechargeAmount, async () => {
+      const newBalance = currentBalance - rechargeAmount;
+      await updateWalletBalance(newBalance);
+      
+      await addTransaction(
+        rechargeAmount,
+        'recharge',
+        `Broadband Bill - Account: ${currentBroadband.accountId} (${currentBroadband.operatorName})`
+      );
+      
+      document.getElementById('rechargeConfirmation').classList.add('hidden');
+      
+      const successAccountId = document.getElementById('successAccountId');
+      const successOperator = document.getElementById('successOperator');
+      const successAmount = document.getElementById('successAmount');
+      const transactionId = document.getElementById('transactionId');
+      const transactionTime = document.getElementById('transactionTime');
+      
+      const genTxnId = 'TXN' + Math.floor(Math.random() * 1000000000);
+      const genTime = new Date().toLocaleString();
+      
+      if (successAccountId) successAccountId.textContent = currentBroadband.accountId;
+      if (successOperator) successOperator.textContent = currentBroadband.operatorName;
+      if (successAmount) successAmount.textContent = `₹${rechargeAmount}`;
+      if (transactionId) transactionId.textContent = genTxnId;
+      if (transactionTime) transactionTime.textContent = genTime;
+      
+      document.getElementById('rechargeSuccessModal').style.display = 'block';
+      confirmBtn.disabled = false;
+      confirmBtn.textContent = 'Confirm & Pay';
+    });
   } catch (error) {
     console.error('Error confirming broadband bill payment:', error);
     showNotification('An error occurred. Please try again.', 'error');
-  } finally {
     confirmBtn.disabled = false;
     confirmBtn.textContent = 'Confirm & Pay';
   }

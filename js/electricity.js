@@ -204,39 +204,42 @@ async function handleConfirmPayment() {
       return;
     }
     
-    const newBalance = currentBalance - payAmount;
-    await updateWalletBalance(newBalance);
-    
-    await addTransaction(
-      payAmount,
-      'recharge',
-      `Electricity Bill - Consumer ID: ${currentBill.consumerNumber} (${currentBill.boardName})`
-    );
-    
-    document.getElementById('rechargeConfirmation').classList.add('hidden');
-    
-    const successCustomer = document.getElementById('successCustomer');
-    const successConsumerNo = document.getElementById('successConsumerNo');
-    const successBoard = document.getElementById('successBoard');
-    const successAmount = document.getElementById('successAmount');
-    const transactionId = document.getElementById('transactionId');
-    const transactionTime = document.getElementById('transactionTime');
-    
-    const genTxnId = 'TXN' + Math.floor(Math.random() * 1000000000);
-    const genTime = new Date().toLocaleString();
-    
-    if (successCustomer) successCustomer.textContent = currentBill.customerName;
-    if (successConsumerNo) successConsumerNo.textContent = currentBill.consumerNumber;
-    if (successBoard) successBoard.textContent = currentBill.boardName;
-    if (successAmount) successAmount.textContent = `₹${payAmount}`;
-    if (transactionId) transactionId.textContent = genTxnId;
-    if (transactionTime) transactionTime.textContent = genTime;
-    
-    document.getElementById('rechargeSuccessModal').style.display = 'block';
+    requireUpiVerification(payAmount, async () => {
+      const newBalance = currentBalance - payAmount;
+      await updateWalletBalance(newBalance);
+      
+      await addTransaction(
+        payAmount,
+        'recharge',
+        `Electricity Bill - Consumer ID: ${currentBill.consumerNumber} (${currentBill.boardName})`
+      );
+      
+      document.getElementById('rechargeConfirmation').classList.add('hidden');
+      
+      const successCustomer = document.getElementById('successCustomer');
+      const successConsumerNo = document.getElementById('successConsumerNo');
+      const successBoard = document.getElementById('successBoard');
+      const successAmount = document.getElementById('successAmount');
+      const transactionId = document.getElementById('transactionId');
+      const transactionTime = document.getElementById('transactionTime');
+      
+      const genTxnId = 'TXN' + Math.floor(Math.random() * 1000000000);
+      const genTime = new Date().toLocaleString();
+      
+      if (successCustomer) successCustomer.textContent = currentBill.customerName;
+      if (successConsumerNo) successConsumerNo.textContent = currentBill.consumerNumber;
+      if (successBoard) successBoard.textContent = currentBill.boardName;
+      if (successAmount) successAmount.textContent = `₹${payAmount}`;
+      if (transactionId) transactionId.textContent = genTxnId;
+      if (transactionTime) transactionTime.textContent = genTime;
+      
+      document.getElementById('rechargeSuccessModal').style.display = 'block';
+      confirmBtn.disabled = false;
+      confirmBtn.textContent = 'Confirm & Pay';
+    });
   } catch (error) {
     console.error('Error confirming electricity payment:', error);
     showNotification('An error occurred. Please try again.', 'error');
-  } finally {
     confirmBtn.disabled = false;
     confirmBtn.textContent = 'Confirm & Pay';
   }

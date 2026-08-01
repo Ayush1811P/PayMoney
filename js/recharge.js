@@ -224,31 +224,33 @@ async function handleConfirmRecharge() {
     return;
   }
   
-  const newBalance = currentBalance - rechargeAmount;
-  await updateWalletBalance(newBalance);
-  
-  await addTransaction(
-    rechargeAmount,
-    'recharge',
-    `Mobile Recharge - ${currentRecharge.mobileNumber} (${currentRecharge.operator})`
-  );
-  
-  document.getElementById('rechargeConfirmation').classList.add('hidden');
-  
-  const successMobile = document.getElementById('successMobile');
-  const successAmount = document.getElementById('successAmount');
-  const transactionId = document.getElementById('transactionId');
-  const transactionTime = document.getElementById('transactionTime');
-  
-  const genTxnId = 'TXN' + Math.floor(Math.random() * 1000000000);
-  const genTime = new Date().toLocaleString();
-  
-  if (successMobile) successMobile.textContent = currentRecharge.mobileNumber;
-  if (successAmount) successAmount.textContent = `₹${rechargeAmount}`;
-  if (transactionId) transactionId.textContent = genTxnId;
-  if (transactionTime) transactionTime.textContent = genTime;
-  
-  document.getElementById('rechargeSuccessModal').style.display = 'block';
+  requireUpiVerification(rechargeAmount, async () => {
+    const newBalance = currentBalance - rechargeAmount;
+    await updateWalletBalance(newBalance);
+    
+    await addTransaction(
+      rechargeAmount,
+      'recharge',
+      `Mobile Recharge - ${currentRecharge.mobileNumber} (${currentRecharge.operator})`
+    );
+    
+    document.getElementById('rechargeConfirmation').classList.add('hidden');
+    
+    const successMobile = document.getElementById('successMobile');
+    const successAmount = document.getElementById('successAmount');
+    const transactionId = document.getElementById('transactionId');
+    const transactionTime = document.getElementById('transactionTime');
+    
+    const genTxnId = 'TXN' + Math.floor(Math.random() * 1000000000);
+    const genTime = new Date().toLocaleString();
+    
+    if (successMobile) successMobile.textContent = currentRecharge.mobileNumber;
+    if (successAmount) successAmount.textContent = `₹${rechargeAmount}`;
+    if (transactionId) transactionId.textContent = genTxnId;
+    if (transactionTime) transactionTime.textContent = genTime;
+    
+    document.getElementById('rechargeSuccessModal').style.display = 'block';
+  });
 }
 
 function resetRechargeForm() {

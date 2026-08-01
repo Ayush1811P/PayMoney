@@ -992,4 +992,278 @@ async function hashPassword(password) {
   return hashHex;
 }
 
-document.addEventListener('DOMContentLoaded', initCommon);
+// === GLOBAL UPI VERIFICATION SYSTEM ===
+
+const INDIAN_IFSC_CODES = [
+  'SBIN0001234', 'HDFC0005678', 'ICIC0009101', 'UTIB0001121', 'PUNB0003141',
+  'BKID0005161', 'CNRB0007181', 'BOFA0009201', 'KKBK0001221', 'IDIB0003241'
+];
+
+let globalUpiCallback = null;
+let currentUpiPin = '';
+const PIN_LENGTH = 4;
+
+function injectUpiModals() {
+  if (document.getElementById('upiGlobalOverlay')) return;
+
+  const html = `
+    <div id="upiGlobalOverlay" class="upi-global-overlay">
+      <!-- Add Bank Account Modal -->
+      <div id="addBankModal" class="upi-global-modal" style="display: none;">
+        <div class="upi-global-header">
+          <h3>Link Bank Account</h3>
+          <button class="upi-global-close" onclick="closeUpiModals()">&times;</button>
+        </div>
+        <div class="upi-global-body">
+          <p style="font-size: 0.9rem; margin-bottom: 15px; color: var(--text-light);">Please link a bank account for UPI payments.</p>
+          <div class="form-group">
+            <label>Account Holder Name</label>
+            <input type="text" id="globalAccName" readonly>
+          </div>
+          <div class="form-group">
+            <label>Account Number</label>
+            <input type="text" id="globalAccNum" readonly>
+          </div>
+          <div class="form-group">
+            <label>Mobile Number</label>
+            <input type="text" id="globalAccPhone" readonly>
+          </div>
+          <div class="form-group">
+            <label>IFSC Code</label>
+            <input type="text" id="globalAccIfsc" readonly>
+          </div>
+        </div>
+        <div class="upi-global-footer">
+          <button class="btn btn-primary" onclick="confirmAddBankAccount()">Done</button>
+        </div>
+      </div>
+
+      <!-- Set UPI PIN Modal -->
+      <div id="setUpiModal" class="upi-global-modal" style="display: none;">
+        <div class="upi-global-header">
+          <h3>Set UPI ID & PIN</h3>
+          <button class="upi-global-close" onclick="closeUpiModals()">&times;</button>
+        </div>
+        <div class="upi-global-body">
+          <div class="form-group">
+            <label>Choose UPI ID</label>
+            <input type="text" id="globalSetupUpiId" placeholder="e.g. name@paymoney">
+          </div>
+          <div class="form-group">
+            <label>Set 4-Digit UPI PIN</label>
+            <input type="password" id="globalSetupUpiPin" placeholder="****" maxlength="4" style="text-align: center; letter-spacing: 5px; font-size: 1.2rem;">
+          </div>
+        </div>
+        <div class="upi-global-footer">
+          <button class="btn btn-primary" onclick="confirmSetUpi()">Set PIN</button>
+        </div>
+      </div>
+
+      <!-- Enter UPI PIN Modal -->
+      <div id="enterUpiModal" class="upi-global-modal" style="display: none;">
+        <div class="upi-global-header">
+          <h3>Enter UPI PIN</h3>
+          <button class="upi-global-close" onclick="closeUpiModals()">&times;</button>
+        </div>
+        <div class="upi-global-body">
+          <p style="text-align: center; color: var(--text-light); margin-bottom: 10px;">Paying <strong id="globalUpiPayAmount"></strong></p>
+          
+          <div class="pin-display-dots" id="globalUpiPinDots">
+            <div class="pin-dot"></div>
+            <div class="pin-dot"></div>
+            <div class="pin-dot"></div>
+            <div class="pin-dot"></div>
+          </div>
+          
+          <div class="pin-keypad">
+            <button class="pin-key" onclick="pressUpiKey(1)">1</button>
+            <button class="pin-key" onclick="pressUpiKey(2)">2</button>
+            <button class="pin-key" onclick="pressUpiKey(3)">3</button>
+            <button class="pin-key" onclick="pressUpiKey(4)">4</button>
+            <button class="pin-key" onclick="pressUpiKey(5)">5</button>
+            <button class="pin-key" onclick="pressUpiKey(6)">6</button>
+            <button class="pin-key" onclick="pressUpiKey(7)">7</button>
+            <button class="pin-key" onclick="pressUpiKey(8)">8</button>
+            <button class="pin-key" onclick="pressUpiKey(9)">9</button>
+            <button class="pin-key empty action-key" onclick="clearUpiPin()">C</button>
+            <button class="pin-key" onclick="pressUpiKey(0)">0</button>
+            <button class="pin-key empty action-key" onclick="submitUpiPin()">
+              <i class="fas fa-check" style="color: var(--primary-color);"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+  document.body.insertAdjacentHTML('beforeend', html);
+}
+
+function closeUpiModals() {
+  const overlay = document.getElementById('upiGlobalOverlay');
+  if (overlay) {
+    overlay.classList.remove('show');
+    document.getElementById('addBankModal').style.display = 'none';
+    document.getElementById('setUpiModal').style.display = 'none';
+    document.getElementById('enterUpiModal').style.display = 'none';
+  }
+}
+
+async function requireUpiVerification(amount, onSuccess) {
+  globalUpiCallback = onSuccess;
+  const user = await getUser();
+  if (!user) {
+    showNotification('Please login to continue', 'error');
+    return;
+  }
+
+  // Check if bank account exists
+  const { data: bankAccounts } = await supabaseClient
+    .from('bank_accounts')
+    .select('*')
+    .eq('user_id', user.id);
+
+  const overlay = document.getElementById('upiGlobalOverlay');
+  overlay.classList.add('show');
+
+  if (!bankAccounts || bankAccounts.length === 0) {
+    // Show Add Bank Account
+    document.getElementById('addBankModal').style.display = 'block';
+    
+    // Auto-fill random data
+    document.getElementById('globalAccName').value = user.full_name;
+    document.getElementById('globalAccPhone').value = user.phone;
+    
+    // Generate unique 10 digit account number
+    const randomAccNum = Math.floor(1000000000 + Math.random() * 9000000000).toString();
+    document.getElementById('globalAccNum').value = randomAccNum;
+    
+    const randomIfsc = INDIAN_IFSC_CODES[Math.floor(Math.random() * INDIAN_IFSC_CODES.length)];
+    document.getElementById('globalAccIfsc').value = randomIfsc;
+  } else if (!user.upi_id || !user.upi_pin) {
+    // Show Setup UPI PIN
+    document.getElementById('setUpiModal').style.display = 'block';
+  } else {
+    // Both exist, ask for PIN
+    document.getElementById('enterUpiModal').style.display = 'block';
+    document.getElementById('globalUpiPayAmount').textContent = '₹' + amount;
+    clearUpiPin();
+  }
+}
+
+async function confirmAddBankAccount() {
+  const user = await getUser();
+  const accNum = document.getElementById('globalAccNum').value;
+  const ifsc = document.getElementById('globalAccIfsc').value;
+
+  const { error } = await supabaseClient
+    .from('bank_accounts')
+    .insert([{
+      user_id: user.id,
+      bank_name: 'AutoLinked Bank',
+      account_number: accNum,
+      ifsc_code: ifsc
+    }]);
+
+  if (error) {
+    showNotification('Failed to add bank account', 'error');
+    return;
+  }
+
+  showNotification('Bank account linked!', 'success');
+  
+  // Transition to Set UPI PIN modal
+  document.getElementById('addBankModal').style.display = 'none';
+  document.getElementById('setUpiModal').style.display = 'block';
+}
+
+async function confirmSetUpi() {
+  const user = await getUser();
+  const upiId = document.getElementById('globalSetupUpiId').value;
+  const upiPin = document.getElementById('globalSetupUpiPin').value;
+
+  if (!upiId || upiPin.length !== 4) {
+    showNotification('Enter a valid UPI ID and 4-digit PIN', 'error');
+    return;
+  }
+
+  const hashedPin = await hashPassword(upiPin);
+
+  const { error } = await supabaseClient
+    .from('profiles')
+    .update({ upi_id: upiId, upi_pin: hashedPin })
+    .eq('id', user.id);
+
+  if (error) {
+    showNotification('Error setting UPI PIN', 'error');
+    return;
+  }
+
+  // Update cache
+  if (cachedProfile) {
+    cachedProfile.upi_id = upiId;
+    cachedProfile.upi_pin = hashedPin;
+  }
+
+  showNotification('UPI PIN set successfully!', 'success');
+  
+  // Transition to Enter PIN modal
+  document.getElementById('setUpiModal').style.display = 'none';
+  document.getElementById('enterUpiModal').style.display = 'block';
+  clearUpiPin();
+}
+
+function pressUpiKey(num) {
+  if (currentUpiPin.length < PIN_LENGTH) {
+    currentUpiPin += num.toString();
+    updatePinDots();
+  }
+}
+
+function clearUpiPin() {
+  currentUpiPin = '';
+  updatePinDots();
+}
+
+function updatePinDots() {
+  const dots = document.querySelectorAll('#globalUpiPinDots .pin-dot');
+  dots.forEach((dot, index) => {
+    if (index < currentUpiPin.length) {
+      dot.classList.add('filled');
+    } else {
+      dot.classList.remove('filled');
+    }
+  });
+}
+
+async function submitUpiPin() {
+  if (currentUpiPin.length !== PIN_LENGTH) {
+    showNotification('Please enter 4-digit PIN', 'error');
+    return;
+  }
+
+  const user = await getUser();
+  const hashedInputPin = await hashPassword(currentUpiPin);
+
+  if (user.upi_pin !== hashedInputPin) {
+    showNotification('Incorrect UPI PIN', 'error');
+    clearUpiPin();
+    return;
+  }
+
+  // Correct PIN
+  closeUpiModals();
+  if (globalUpiCallback) {
+    globalUpiCallback();
+  }
+}
+
+// Intercept window load to inject modals
+const originalInitCommon = typeof initCommon !== 'undefined' ? initCommon : () => {};
+window.initCommon = async function() {
+  injectUpiModals();
+  if (originalInitCommon) await originalInitCommon();
+};
+
+document.addEventListener('DOMContentLoaded', () => {
+  injectUpiModals();
+});
