@@ -1018,19 +1018,19 @@ function injectUpiModals() {
           <p style="font-size: 0.9rem; margin-bottom: 15px; color: var(--text-light);">Please link a bank account for UPI payments.</p>
           <div class="form-group">
             <label>Account Holder Name</label>
-            <input type="text" id="globalAccName" readonly>
+            <input type="text" id="globalAccName">
           </div>
           <div class="form-group">
             <label>Account Number</label>
-            <input type="text" id="globalAccNum" readonly>
+            <input type="text" id="globalAccNum">
           </div>
           <div class="form-group">
             <label>Mobile Number</label>
-            <input type="text" id="globalAccPhone" readonly>
+            <input type="text" id="globalAccPhone">
           </div>
           <div class="form-group">
             <label>IFSC Code</label>
-            <input type="text" id="globalAccIfsc" readonly>
+            <input type="text" id="globalAccIfsc">
           </div>
         </div>
         <div class="upi-global-footer">
@@ -1258,12 +1258,9 @@ async function submitUpiPin() {
 }
 
 // Intercept window load to inject modals
-const originalInitCommon = typeof initCommon !== 'undefined' ? initCommon : () => {};
-window.initCommon = async function() {
+document.addEventListener('DOMContentLoaded', async () => {
   injectUpiModals();
-  if (originalInitCommon) await originalInitCommon();
-};
-
-document.addEventListener('DOMContentLoaded', () => {
-  injectUpiModals();
+  if (typeof initCommon === 'function') {
+    await initCommon();
+  }
 });
