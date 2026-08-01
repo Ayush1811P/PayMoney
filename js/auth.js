@@ -168,7 +168,6 @@ async function handleLogin(e) {
 async function handleRegister(e) {
   e.preventDefault();
   
-<<<<<<< HEAD
   try {
     const fullName = document.getElementById('fullName').value.trim();
     const phone = document.getElementById('phone').value.trim();
