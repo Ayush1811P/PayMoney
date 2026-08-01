@@ -222,6 +222,7 @@ async function handleRegister(e) {
         { 
           full_name: fullName, 
           phone: phone,
+          upi_id: phone + '@paymoney',
           password_hash: hashedPassword,
           wallet_balance: 20000.00 // Default starter balance
         }

@@ -3,6 +3,7 @@ CREATE TABLE profiles (
     id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
     full_name TEXT NOT NULL,
     phone TEXT NOT NULL UNIQUE,
+    upi_id TEXT UNIQUE,
     password_hash TEXT NOT NULL,
     wallet_balance NUMERIC(10, 2) DEFAULT 20000.00,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc', now())
