@@ -223,7 +223,7 @@ async function handleRegister(e) {
           full_name: fullName, 
           phone: phone,
           password_hash: hashedPassword,
-          wallet_balance: 10000.00 // Default starter balance
+          wallet_balance: 20000.00 // Default starter balance
         }
       ])
       .select();

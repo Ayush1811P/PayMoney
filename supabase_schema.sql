@@ -4,7 +4,7 @@ CREATE TABLE profiles (
     full_name TEXT NOT NULL,
     phone TEXT NOT NULL UNIQUE,
     password_hash TEXT NOT NULL,
-    wallet_balance NUMERIC(10, 2) DEFAULT 10000.00,
+    wallet_balance NUMERIC(10, 2) DEFAULT 20000.00,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc', now())
 );
 

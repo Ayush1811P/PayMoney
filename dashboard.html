@@ -94,7 +94,6 @@
       
       <div class="action-buttons">
         <button id="sendMoneyBtn" class="btn btn-primary">Send Money</button>
-        <button id="addMoneyBtn" class="btn btn-secondary">Add Money</button>
       </div>
     </section>
     
@@ -139,40 +138,6 @@
       </div>
     </section>
   </main>
-  
-  <!-- Add Money Modal -->
-  <div id="addMoneyModal" class="modal">
-    <div class="modal-content">
-      <span class="close-modal">&times;</span>
-      <h2>Add Money to Wallet</h2>
-      <form id="addMoneyForm">
-        <div class="form-group">
-          <label for="addAmount">Amount (₹)</label>
-          <input type="number" id="addAmount" min="0.01" max="50000" step="0.01" required placeholder="Enter amount">
-        </div>
-        
-        <div class="payment-methods">
-          <h3>Payment Method</h3>
-          <div class="payment-options">
-            <div class="payment-option">
-              <input type="radio" name="paymentMethod" id="methodUPI" value="upi" checked>
-              <label for="methodUPI">UPI</label>
-            </div>
-            <div class="payment-option">
-              <input type="radio" name="paymentMethod" id="methodCard" value="card">
-              <label for="methodCard">Debit/Credit Card</label>
-            </div>
-            <div class="payment-option">
-              <input type="radio" name="paymentMethod" id="methodNetBanking" value="netbanking">
-              <label for="methodNetBanking">Net Banking</label>
-            </div>
-          </div>
-        </div>
-        
-        <button type="submit" class="btn btn-primary">Proceed to Payment</button>
-      </form>
-    </div>
-  </div>
   
   <!-- Send Money Modal -->
   <div id="sendMoneyModal" class="modal">
