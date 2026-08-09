@@ -985,6 +985,10 @@ function validatePhone(phone) {
 
 // Hash a password using SHA-256
 async function hashPassword(password) {
+  if (!window.crypto || !window.crypto.subtle) {
+    // Fallback for file:// protocol where Web Crypto is disabled
+    return 'fallback_' + btoa(password);
+  }
   const msgUint8 = new TextEncoder().encode(password);
   const hashBuffer = await crypto.subtle.digest('SHA-256', msgUint8);
   const hashArray = Array.from(new Uint8Array(hashBuffer));
@@ -1236,24 +1240,30 @@ function updatePinDots() {
 }
 
 async function submitUpiPin() {
-  if (currentUpiPin.length !== PIN_LENGTH) {
-    showNotification('Please enter 4-digit PIN', 'error');
-    return;
-  }
+  try {
+    if (currentUpiPin.length !== PIN_LENGTH) {
+      showNotification('Please enter 4-digit PIN', 'error');
+      return;
+    }
 
-  const user = await getUser();
-  const hashedInputPin = await hashPassword(currentUpiPin);
+    const user = await getUser();
+    const hashedInputPin = await hashPassword(currentUpiPin);
 
-  if (user.upi_pin !== hashedInputPin) {
-    showNotification('Incorrect UPI PIN', 'error');
-    clearUpiPin();
-    return;
-  }
+    if (user.upi_pin !== hashedInputPin) {
+      showNotification('Incorrect UPI PIN', 'error');
+      clearUpiPin();
+      return;
+    }
 
-  // Correct PIN
-  closeUpiModals();
-  if (globalUpiCallback) {
-    globalUpiCallback();
+    // Correct PIN
+    closeUpiModals();
+    if (globalUpiCallback) {
+      await globalUpiCallback();
+    }
+  } catch (error) {
+    console.error('Transaction error:', error);
+    showNotification('Error: ' + (error.message || 'Transaction failed'), 'error');
+    closeUpiModals();
   }
 }
 
