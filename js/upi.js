@@ -221,7 +221,7 @@ async function loadUpiTransactions() {
           <img src="${avatarUrl}" alt="Avatar" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">
         </div>
         <div class="transaction-details">
-          <div class="transaction-title">${tx.description}</div>
+          <div class="transaction-title">${tx.display_description || tx.description}</div>
           <div class="transaction-date">${formatDateTime(tx.created_at)}</div>
         </div>
         <div class="transaction-amount ${typeClass}">₹${formatCurrency(tx.amount)}</div>

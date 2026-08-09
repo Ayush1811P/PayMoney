@@ -163,7 +163,7 @@ async function getTransactions() {
   const user = await getUser();
   if (!user) return [];
 
-  const { data, error } = await supabaseClient
+  const { data: txns, error } = await supabaseClient
     .from('transactions')
     .select('*')
     .or(`sender_id.eq.${user.id},receiver_id.eq.${user.id}`)
@@ -173,7 +173,48 @@ async function getTransactions() {
     console.error('Error fetching transactions:', error);
     return [];
   }
-  return data;
+  
+  if (!txns || txns.length === 0) return [];
+
+  // Fetch profiles for senders and receivers
+  const profileIds = new Set();
+  txns.forEach(tx => {
+    if (tx.sender_id) profileIds.add(tx.sender_id);
+    if (tx.receiver_id) profileIds.add(tx.receiver_id);
+  });
+
+  const { data: profiles } = await supabaseClient
+    .from('profiles')
+    .select('id, full_name, upi_id, phone')
+    .in('id', Array.from(profileIds));
+
+  const profileMap = {};
+  if (profiles) {
+    profiles.forEach(p => profileMap[p.id] = p);
+  }
+
+  // Attach sender/receiver to each transaction and formulate title
+  txns.forEach(tx => {
+    tx.sender = profileMap[tx.sender_id];
+    tx.receiver = profileMap[tx.receiver_id];
+    
+    // Fix description for receiver
+    if (tx.receiver_id === user.id && tx.transaction_type === 'peer_to_peer') {
+      const senderIdentifier = tx.sender ? (tx.sender.upi_id || tx.sender.phone || tx.sender.full_name) : 'Unknown';
+      
+      // Extract the note if present
+      let note = '';
+      if (tx.description && tx.description.includes(' - ')) {
+        note = ' - ' + tx.description.split(' - ').slice(1).join(' - ');
+      }
+      
+      tx.display_description = `Received from ${senderIdentifier}${note}`;
+    } else {
+      tx.display_description = tx.description;
+    }
+  });
+
+  return txns;
 }
 
 // Handle mobile menu toggle

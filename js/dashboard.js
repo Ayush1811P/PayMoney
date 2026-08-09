@@ -118,7 +118,7 @@ async function loadTransactions() {
             <img src="${avatarUrl}" alt="Avatar" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">
           </div>
           <div class="transaction-details">
-            <div class="transaction-title">${transaction.description}</div>
+            <div class="transaction-title">${transaction.display_description || transaction.description}</div>
             <div class="transaction-date">${formatDateTime(transaction.created_at)}</div>
           </div>
           <div class="transaction-amount ${typeClass}">
