@@ -1070,30 +1070,14 @@ function injectUpiModals() {
           <button class="upi-global-close" onclick="closeUpiModals()">&times;</button>
         </div>
         <div class="upi-global-body">
-          <p style="text-align: center; color: var(--text-light); margin-bottom: 10px;">Paying <strong id="globalUpiPayAmount"></strong></p>
+          <p style="text-align: center; color: var(--text-light); margin-bottom: 20px;">Paying <strong id="globalUpiPayAmount"></strong></p>
           
-          <div class="pin-display-dots" id="globalUpiPinDots">
-            <div class="pin-dot"></div>
-            <div class="pin-dot"></div>
-            <div class="pin-dot"></div>
-            <div class="pin-dot"></div>
+          <div class="form-group" style="text-align: center; margin-bottom: 20px;">
+            <input type="password" id="globalPhysicalUpiPin" placeholder="****" maxlength="4" style="text-align: center; letter-spacing: 10px; font-size: 1.5rem; padding: 10px; width: 50%; border-radius: var(--border-radius-md); border: 1px solid var(--border-color); margin: 0 auto;">
           </div>
           
-          <div class="pin-keypad">
-            <button class="pin-key" onclick="pressUpiKey(1)">1</button>
-            <button class="pin-key" onclick="pressUpiKey(2)">2</button>
-            <button class="pin-key" onclick="pressUpiKey(3)">3</button>
-            <button class="pin-key" onclick="pressUpiKey(4)">4</button>
-            <button class="pin-key" onclick="pressUpiKey(5)">5</button>
-            <button class="pin-key" onclick="pressUpiKey(6)">6</button>
-            <button class="pin-key" onclick="pressUpiKey(7)">7</button>
-            <button class="pin-key" onclick="pressUpiKey(8)">8</button>
-            <button class="pin-key" onclick="pressUpiKey(9)">9</button>
-            <button class="pin-key empty action-key" onclick="clearUpiPin()">C</button>
-            <button class="pin-key" onclick="pressUpiKey(0)">0</button>
-            <button class="pin-key empty action-key" onclick="submitUpiPin()">
-              <i class="fas fa-check" style="color: var(--primary-color);"></i>
-            </button>
+          <div style="text-align: center;">
+            <button class="btn btn-primary" onclick="submitUpiPin()" style="width: 100%;">Confirm Payment</button>
           </div>
         </div>
       </div>
@@ -1226,6 +1210,8 @@ function pressUpiKey(num) {
 function clearUpiPin() {
   currentUpiPin = '';
   updatePinDots();
+  const pinInput = document.getElementById('globalPhysicalUpiPin');
+  if (pinInput) pinInput.value = '';
 }
 
 function updatePinDots() {
@@ -1241,13 +1227,16 @@ function updatePinDots() {
 
 async function submitUpiPin() {
   try {
-    if (currentUpiPin.length !== PIN_LENGTH) {
+    const pinInput = document.getElementById('globalPhysicalUpiPin');
+    const pinValue = pinInput ? pinInput.value : currentUpiPin;
+
+    if (pinValue.length !== PIN_LENGTH) {
       showNotification('Please enter 4-digit PIN', 'error');
       return;
     }
 
     const user = await getUser();
-    const hashedInputPin = await hashPassword(currentUpiPin);
+    const hashedInputPin = await hashPassword(pinValue);
 
     if (user.upi_pin !== hashedInputPin) {
       showNotification('Incorrect UPI PIN', 'error');
@@ -1256,6 +1245,7 @@ async function submitUpiPin() {
     }
 
     // Correct PIN
+    clearUpiPin();
     closeUpiModals();
     if (globalUpiCallback) {
       await globalUpiCallback();
