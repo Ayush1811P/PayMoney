@@ -1,6 +1,6 @@
 -- 1. Create 'profiles' table
 CREATE TABLE profiles (
-    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+    id UUID DEFAULT gen_random_uuid() PRIMARY KEY, 
     full_name TEXT NOT NULL,
     email TEXT UNIQUE,
     phone TEXT NOT NULL UNIQUE,

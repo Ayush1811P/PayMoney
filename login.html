@@ -75,8 +75,15 @@
             <label for="otpInputLogin">Enter OTP</label>
             <input type="text" id="otpInputLogin" required placeholder="00000000" maxlength="8" style="text-align: center; letter-spacing: 5px; font-size: 1.2rem;">
           </div>
-          <button type="submit" class="btn btn-primary">Verify & Login</button>
-          <button type="button" class="btn btn-secondary" id="backToLoginBtn" style="margin-top: 10px; background: #eee; color: #333;">Back</button>
+          <button type="submit" class="btn btn-primary" id="verifyLoginBtn">Verify & Login</button>
+          
+          <div style="margin-top: 15px; display: flex; justify-content: space-between; align-items: center;">
+            <button type="button" class="btn btn-secondary" id="backToLoginBtn" style="background: #eee; color: #333; padding: 8px 16px;">Back</button>
+            <div style="text-align: right;">
+              <button type="button" id="resendOtpBtnLogin" disabled style="background: none; border: none; color: #00baf2; cursor: not-allowed; font-weight: 500;">Resend OTP</button>
+              <span id="otpTimerDisplayLogin" style="display: block; font-size: 0.85rem; color: #757575;">Available in 100s</span>
+            </div>
+          </div>
         </form>
         
         <div class="auth-footer">

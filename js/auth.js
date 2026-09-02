@@ -6,6 +6,35 @@
 let currentRegistrationData = null;
 let currentLoginData = null;
 
+let otpTimerInterval = null;
+
+function startOtpTimer(btnId, displayId) {
+  const btn = document.getElementById(btnId);
+  const display = document.getElementById(displayId);
+  if (!btn || !display) return;
+  
+  clearInterval(otpTimerInterval);
+  btn.disabled = true;
+  btn.style.cursor = 'not-allowed';
+  btn.style.opacity = '0.5';
+  
+  let timeLeft = 100;
+  display.textContent = `Available in ${timeLeft}s`;
+  
+  otpTimerInterval = setInterval(() => {
+    timeLeft--;
+    if (timeLeft <= 0) {
+      clearInterval(otpTimerInterval);
+      btn.disabled = false;
+      btn.style.cursor = 'pointer';
+      btn.style.opacity = '1';
+      display.textContent = '';
+    } else {
+      display.textContent = `Available in ${timeLeft}s`;
+    }
+  }, 1000);
+}
+
 // Call Supabase Auth to send OTP
 async function sendEmailOtp(email, type) {
   const { error } = await supabaseClient.auth.signInWithOtp({
@@ -200,6 +229,23 @@ document.addEventListener('DOMContentLoaded', async function() {
           showNotification(error.message, 'error');
         }
       });
+      
+      const resendBtnRegister = document.getElementById('resendOtpBtn');
+      if (resendBtnRegister) {
+        resendBtnRegister.addEventListener('click', async () => {
+          if (!currentRegistrationData) return;
+          resendBtnRegister.disabled = true;
+          resendBtnRegister.textContent = 'Sending...';
+          try {
+            await sendEmailOtp(currentRegistrationData.email, 'Registration');
+            showNotification('OTP resent successfully', 'success');
+            startOtpTimer('resendOtpBtn', 'otpTimerDisplay');
+          } catch (error) {
+            showNotification(error.message, 'error');
+          }
+          resendBtnRegister.textContent = 'Resend OTP';
+        });
+      }
     }
   }
 
@@ -232,6 +278,23 @@ document.addEventListener('DOMContentLoaded', async function() {
         window.location.href = 'dashboard.html';
       }, 1500);
     });
+    
+    const resendBtnLogin = document.getElementById('resendOtpBtnLogin');
+    if (resendBtnLogin) {
+      resendBtnLogin.addEventListener('click', async () => {
+        if (!currentLoginData) return;
+        resendBtnLogin.disabled = true;
+        resendBtnLogin.textContent = 'Sending...';
+        try {
+          await sendEmailOtp(currentLoginData.email, 'Login');
+          showNotification('OTP resent successfully', 'success');
+          startOtpTimer('resendOtpBtnLogin', 'otpTimerDisplayLogin');
+        } catch (error) {
+          showNotification(error.message, 'error');
+        }
+        resendBtnLogin.textContent = 'Resend OTP';
+      });
+    }
   }
 });
 
@@ -306,6 +369,7 @@ async function handleLogin(e) {
   document.getElementById('loginForm').style.display = 'none';
   document.getElementById('otpFormLogin').style.display = 'block';
   showNotification('An OTP has been sent to your registered email.', 'success');
+  startOtpTimer('resendOtpBtnLogin', 'otpTimerDisplayLogin');
 }
 
 // Handle register form submission
@@ -395,6 +459,7 @@ async function handleRegister(e) {
     document.getElementById('registerForm').style.display = 'none';
     document.getElementById('otpForm').style.display = 'block';
     showNotification('An OTP has been sent to your email.', 'success');
+    startOtpTimer('resendOtpBtn', 'otpTimerDisplay');
   } catch (error) {
     alert("Caught Error: " + error.name + " - " + error.message);
     console.error(error);
