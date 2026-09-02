@@ -65,7 +65,18 @@
           
 
           
-          <button type="submit" class="btn btn-primary">Login</button>
+          <button type="submit" class="btn btn-primary" id="loginBtn">Login</button>
+        </form>
+        
+        <form id="otpFormLogin" style="display: none;">
+          <h3>Email Verification</h3>
+          <p>We've sent an 8-digit verification code to your registered email for 2FA.</p>
+          <div class="form-group">
+            <label for="otpInputLogin">Enter OTP</label>
+            <input type="text" id="otpInputLogin" required placeholder="00000000" maxlength="8" style="text-align: center; letter-spacing: 5px; font-size: 1.2rem;">
+          </div>
+          <button type="submit" class="btn btn-primary">Verify & Login</button>
+          <button type="button" class="btn btn-secondary" id="backToLoginBtn" style="margin-top: 10px; background: #eee; color: #333;">Back</button>
         </form>
         
         <div class="auth-footer">

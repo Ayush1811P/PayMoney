@@ -2,6 +2,60 @@
  * Authentication functionality for the PayMoney application (Direct Database Auth)
  */
 
+// OTP State
+let currentRegistrationData = null;
+let currentLoginData = null;
+
+// Call Supabase Auth to send OTP
+async function sendEmailOtp(email, type) {
+  const { error } = await supabaseClient.auth.signInWithOtp({
+    email: email,
+  });
+  
+  if (error) {
+    throw new Error(error.message || 'Failed to send OTP');
+  }
+  return { message: 'OTP sent' };
+}
+
+// Call Supabase Auth to verify OTP
+async function verifyEmailOtp(email, otp, type = 'Login', profileData = null) {
+  // 1. Verify the OTP with Supabase Auth
+  const { data, error } = await supabaseClient.auth.verifyOtp({
+    email: email,
+    token: otp,
+    type: 'email'
+  });
+  
+  if (error) {
+    throw new Error(error.message || 'Invalid OTP');
+  }
+  
+  // 2. If it's a Registration, securely insert the custom profile data via backend
+  if (type === 'Registration' && profileData) {
+    // We pass the session access token to prove to the backend we are verified
+    const response = await fetch('/.netlify/functions/complete-registration', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ 
+        token: data.session.access_token, 
+        profileData 
+      })
+    });
+    
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || 'Failed to create user profile');
+    }
+    
+    const result = await response.json();
+    return { profileId: result.profileId };
+  }
+  
+  // If Login, just return success
+  return { success: true };
+}
+
 document.addEventListener('DOMContentLoaded', async function() {
   // Redirect if already logged in
   if (await redirectIfLoggedIn()) return;
@@ -115,6 +169,69 @@ document.addEventListener('DOMContentLoaded', async function() {
         termsModal.style.display = 'none';
       }
     });
+    
+    // OTP Form Logic - Register
+    const otpForm = document.getElementById('otpForm');
+    const backToRegisterBtn = document.getElementById('backToRegisterBtn');
+    
+    if (otpForm && backToRegisterBtn) {
+      backToRegisterBtn.addEventListener('click', () => {
+        otpForm.style.display = 'none';
+        registerForm.style.display = 'block';
+      });
+      
+      otpForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const enteredOtp = document.getElementById('otpInput').value.trim();
+        
+        try {
+          const result = await verifyEmailOtp(currentRegistrationData.email, enteredOtp, 'Registration', currentRegistrationData);
+          
+          if (result.profileId) {
+            localStorage.setItem('paymoney_user_id', result.profileId);
+            showNotification('Registration successful! Redirecting...');
+            setTimeout(() => {
+              window.location.href = 'dashboard.html';
+            }, 1500);
+          } else {
+            throw new Error('Failed to retrieve profile ID');
+          }
+        } catch (error) {
+          showNotification(error.message, 'error');
+        }
+      });
+    }
+  }
+
+  // OTP Form Logic - Login
+  const otpFormLogin = document.getElementById('otpFormLogin');
+  const backToLoginBtn = document.getElementById('backToLoginBtn');
+  const loginFormRef = document.getElementById('loginForm');
+  
+  if (otpFormLogin && backToLoginBtn) {
+    backToLoginBtn.addEventListener('click', () => {
+      otpFormLogin.style.display = 'none';
+      loginFormRef.style.display = 'block';
+    });
+    
+    otpFormLogin.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const enteredOtp = document.getElementById('otpInputLogin').value.trim();
+      
+      try {
+        await verifyEmailOtp(currentLoginData.email, enteredOtp);
+      } catch (error) {
+        showNotification(error.message, 'error');
+        return;
+      }
+      
+      // OTP matched, complete login
+      localStorage.setItem('paymoney_user_id', currentLoginData.id);
+      showNotification('Login successful! Redirecting...');
+      setTimeout(() => {
+        window.location.href = 'dashboard.html';
+      }, 1500);
+    });
   }
 });
 
@@ -155,13 +272,40 @@ async function handleLogin(e) {
     return;
   }
   
-  // Save user ID to localStorage session
-  localStorage.setItem('paymoney_user_id', data.id);
+  if (!data.email) {
+    // If user has no email registered (legacy user), just log them in
+    localStorage.setItem('paymoney_user_id', data.id);
+    showNotification('Login successful! Redirecting...');
+    setTimeout(() => {
+      window.location.href = 'dashboard.html';
+    }, 1500);
+    return;
+  }
   
-  showNotification('Login successful! Redirecting...');
-  setTimeout(() => {
-    window.location.href = 'dashboard.html';
-  }, 1500);
+  // Prepare for 2FA OTP
+  currentLoginData = data;
+  
+  // Show loading/notification
+  const btn = document.getElementById('loginBtn');
+  const originalText = btn.textContent;
+  btn.textContent = 'Sending OTP...';
+  btn.disabled = true;
+  
+  try {
+    await sendEmailOtp(data.email, 'Login');
+  } catch (error) {
+    showNotification(error.message, 'error');
+    btn.textContent = originalText;
+    btn.disabled = false;
+    return;
+  }
+  
+  btn.textContent = originalText;
+  btn.disabled = false;
+  
+  document.getElementById('loginForm').style.display = 'none';
+  document.getElementById('otpFormLogin').style.display = 'block';
+  showNotification('An OTP has been sent to your registered email.', 'success');
 }
 
 // Handle register form submission
@@ -170,12 +314,13 @@ async function handleRegister(e) {
   
   try {
     const fullName = document.getElementById('fullName').value.trim();
+    const email = document.getElementById('email').value.trim();
     const phone = document.getElementById('phone').value.trim();
     const password = document.getElementById('password').value;
     const confirmPassword = document.getElementById('confirmPassword').value;
     const termsAgree = document.getElementById('termsAgree').checked;
     
-    if (!fullName || !phone || !password || !confirmPassword) {
+    if (!fullName || !email || !phone || !password || !confirmPassword) {
       showNotification('Please fill in all fields', 'error');
       return;
     }
@@ -200,50 +345,56 @@ async function handleRegister(e) {
       return;
     }
     
-    // Check if phone number is already registered
+    // Check if phone or email is already registered
     const { data: existingUser, error: checkError } = await supabaseClient
       .from('profiles')
-      .select('id')
-      .eq('phone', phone)
+      .select('id, phone, email')
+      .or(`phone.eq.${phone},email.eq.${email}`)
       .maybeSingle();
       
     if (existingUser) {
-      showNotification('This phone number is already registered', 'error');
+      if (existingUser.phone === phone) {
+        showNotification('This phone number is already registered', 'error');
+      } else {
+        showNotification('This email address is already registered', 'error');
+      }
       return;
     }
     
     // Hash password
     const hashedPassword = await hashPassword(password);
     
-    // Insert profile data directly into profiles table
-    const { data: profileData, error: profileError } = await supabaseClient
-      .from('profiles')
-      .insert([
-        { 
-          full_name: fullName, 
-          phone: phone,
-          upi_id: phone + '@paymoney',
-          password_hash: hashedPassword,
-          wallet_balance: 20000.00 // Default starter balance
-        }
-      ])
-      .select();
-        
-    if (profileError) {
-      console.error(profileError);
-      showNotification('Registration failed: ' + profileError.message, 'error');
+    // Prepare registration data
+    currentRegistrationData = { 
+      full_name: fullName, 
+      email: email,
+      phone: phone,
+      upi_id: phone + '@paymoney',
+      password_hash: hashedPassword,
+      wallet_balance: 20000.00 // Default starter balance
+    };
+    
+    const btn = document.getElementById('registerBtn');
+    const originalText = btn.textContent;
+    btn.textContent = 'Sending OTP...';
+    btn.disabled = true;
+    
+    try {
+      await sendEmailOtp(email, 'Registration');
+    } catch (error) {
+      showNotification(error.message, 'error');
+      btn.textContent = originalText;
+      btn.disabled = false;
       return;
     }
     
-    if (profileData && profileData[0]) {
-      // Save user ID to localStorage session
-      localStorage.setItem('paymoney_user_id', profileData[0].id);
-      showNotification('Registration successful! Redirecting...');
-      
-      setTimeout(() => {
-        window.location.href = 'dashboard.html';
-      }, 1500);
-    }
+    btn.textContent = originalText;
+    btn.disabled = false;
+    
+    // Switch forms
+    document.getElementById('registerForm').style.display = 'none';
+    document.getElementById('otpForm').style.display = 'block';
+    showNotification('An OTP has been sent to your email.', 'success');
   } catch (error) {
     alert("Caught Error: " + error.name + " - " + error.message);
     console.error(error);

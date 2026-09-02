@@ -51,7 +51,10 @@
             <input type="text" id="fullName" required placeholder="Enter your full name">
           </div>
 
-
+          <div class="form-group">
+            <label for="email">Email Address</label>
+            <input type="email" id="email" required placeholder="Enter your email address">
+          </div>
 
           <div class="form-group">
             <label for="phone">Phone Number</label>
@@ -99,7 +102,18 @@
             <label for="termsAgree">I agree to the <a href="#" id="viewTermsLink">Terms and Conditions</a></label>
           </div>
 
-          <button type="submit" class="btn btn-primary">Create Account</button>
+          <button type="submit" class="btn btn-primary" id="registerBtn">Create Account</button>
+        </form>
+
+        <form id="otpForm" style="display: none;">
+          <h3>Email Verification</h3>
+          <p>We've sent an 8-digit verification code to your email.</p>
+          <div class="form-group">
+            <label for="otpInput">Enter OTP</label>
+            <input type="text" id="otpInput" required placeholder="00000000" maxlength="8" style="text-align: center; letter-spacing: 5px; font-size: 1.2rem;">
+          </div>
+          <button type="submit" class="btn btn-primary">Verify & Register</button>
+          <button type="button" class="btn btn-secondary" id="backToRegisterBtn" style="margin-top: 10px; background: #eee; color: #333;">Back</button>
         </form>
 
         <div class="auth-footer">
