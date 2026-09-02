@@ -160,6 +160,11 @@ body {
   font-size: 24px;
 }
 
+.action-icon.fd::before {
+  content: '📈';
+  font-size: 24px;
+}
+
 .action-icon.upi::before {
   content: '💳';
   font-size: 24px;

@@ -366,12 +366,7 @@ function initQrMenuOptions() {
       document.getElementById('showQrBtn').addEventListener('click', handleShowQr);
     }
     
-    if (!document.getElementById('scanQrBtn')) {
-      const scanQrLi = document.createElement('li');
-      scanQrLi.innerHTML = '<a href="#" id="scanQrBtn">Scan QR</a>';
-      navTabs.appendChild(scanQrLi);
-      document.getElementById('scanQrBtn').addEventListener('click', handleScanQr);
-    }
+
   }
   
   // Add options to mobile-menu
@@ -390,18 +385,7 @@ function initQrMenuOptions() {
       document.getElementById('mobileShowQrBtn').addEventListener('click', handleShowQr);
     }
     
-    if (!document.getElementById('mobileScanQrBtn')) {
-      const scanQrMobileLi = document.createElement('li');
-      scanQrMobileLi.innerHTML = '<a href="#" id="mobileScanQrBtn">Scan QR</a>';
-      
-      const logoutLi = document.getElementById('mobileLogout')?.parentElement;
-      if (logoutLi) {
-        mobileMenuUl.insertBefore(scanQrMobileLi, logoutLi);
-      } else {
-        mobileMenuUl.appendChild(scanQrMobileLi);
-      }
-      document.getElementById('mobileScanQrBtn').addEventListener('click', handleScanQr);
-    }
+
   }
 }
 
@@ -962,11 +946,12 @@ async function handleShowQr(e) {
     }
     
     const upiAddress = profile.upi_id || `${profile.phone}@paymoney`;
+    const displayUpi = profile.upi_id || '';
     const fullName = profile.full_name || 'User';
     
     // Update texts
     document.getElementById('qrUserName').textContent = fullName;
-    document.getElementById('qrUserUpi').textContent = upiAddress;
+    document.getElementById('qrUserUpi').textContent = displayUpi;
     
     // Generate QR
     const qrValue = `upi://pay?pa=${upiAddress}&pn=${encodeURIComponent(fullName)}&cu=INR`;

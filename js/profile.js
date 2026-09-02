@@ -62,6 +62,27 @@ async function loadProfileData() {
   if (profileEmailInput) profileEmailInput.value = profile.email || '';
   if (profilePhone) profilePhone.value = profile.phone;
   
+  // Load extra details from localStorage to prevent them from being empty
+  try {
+    const savedExtra = localStorage.getItem(`profile_extra_${user.id}`);
+    if (savedExtra) {
+      const extraDetails = JSON.parse(savedExtra);
+      const profileDob = document.getElementById('profileDob');
+      const profileAddress = document.getElementById('profileAddress');
+      const profileCity = document.getElementById('profileCity');
+      const profileState = document.getElementById('profileState');
+      const profilePincode = document.getElementById('profilePincode');
+      
+      if (profileDob && extraDetails.dob) profileDob.value = extraDetails.dob;
+      if (profileAddress && extraDetails.address) profileAddress.value = extraDetails.address;
+      if (profileCity && extraDetails.city) profileCity.value = extraDetails.city;
+      if (profileState && extraDetails.state) profileState.value = extraDetails.state;
+      if (profilePincode && extraDetails.pincode) profilePincode.value = extraDetails.pincode;
+    }
+  } catch (e) {
+    console.error('Error loading extra details', e);
+  }
+  
   const upiStatusBadge = document.getElementById('upiStatusBadge');
   const profileUpiId = document.getElementById('profileUpiId');
   
@@ -240,6 +261,20 @@ async function handlePersonalInfoUpdate(e) {
   if (error) {
     showNotification('Error updating profile', 'error');
   } else {
+    // Save extra details to localStorage
+    try {
+      const extraDetails = {
+        dob: document.getElementById('profileDob')?.value || '',
+        address: document.getElementById('profileAddress')?.value || '',
+        city: document.getElementById('profileCity')?.value || '',
+        state: document.getElementById('profileState')?.value || '',
+        pincode: document.getElementById('profilePincode')?.value || ''
+      };
+      localStorage.setItem(`profile_extra_${user.id}`, JSON.stringify(extraDetails));
+    } catch (e) {
+      console.error('Error saving extra details', e);
+    }
+    
     showNotification('Profile updated successfully');
     await loadProfileData();
     await updateUserInfo(); // Re-render header
