@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PAYMONEY - Family & Lite Accounts</title>
+  <link rel="stylesheet" href="css/main.css">
+  <link rel="stylesheet" href="css/dashboard.css">
+  <link rel="stylesheet" href="css/logo.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap">
+  <style>
+    .lite-account-card {
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: var(--border-radius-lg);
+      padding: var(--spacing-lg);
+      margin-bottom: var(--spacing-lg);
+      box-shadow: var(--shadow-sm);
+    }
+    .lite-account-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: var(--spacing-md);
+      padding-bottom: var(--spacing-sm);
+      border-bottom: 1px solid #e2e8f0;
+    }
+    .lite-account-header h3 {
+      margin: 0;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .lite-balance {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: var(--primary-color);
+    }
+    .lite-transactions-container {
+      background-color: #f8fafc;
+      border-radius: var(--border-radius-md);
+      padding: var(--spacing-md);
+      max-height: 400px;
+      overflow-y: auto;
+    }
+    .lite-txn-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 0;
+      border-bottom: 1px solid #e2e8f0;
+    }
+    .lite-txn-item:last-child {
+      border-bottom: none;
+    }
+    .txn-details p {
+      margin: 0;
+    }
+    .txn-details p.title {
+      font-weight: 600;
+      color: #334155;
+    }
+    .txn-details p.date {
+      font-size: 0.8rem;
+      color: #64748b;
+    }
+    .txn-amount {
+      font-weight: 700;
+    }
+    .txn-amount.debit {
+      color: #ef4444;
+    }
+    .txn-amount.credit {
+      color: #22c55e;
+    }
+  </style>
+</head>
+<body>
+  <header class="main-header">
+    <div class="header-content">
+      <div class="logo">
+        <a href="dashboard.html" class="paymoney-logo">
+          <span class="logo-text-css">
+            <span class="pay-part">PAY</span><span class="money-part">MONEY</span>
+          </span>
+        </a>
+      </div>
+      
+      <div class="user-menu">
+        <a href="dashboard.html" class="btn btn-outline" style="margin-right: 15px;">Back to Dashboard</a>
+        <button id="logoutBtn" class="btn btn-outline">Logout</button>
+      </div>
+    </div>
+  </header>
+  
+  <main class="dashboard-container" style="margin-top: 40px;">
+    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px;">
+      <h2>👪 Linked Lite Accounts (Parent Monitoring)</h2>
+    </div>
+
+    <div id="liteAccountsList">
+      <!-- Loading state -->
+      <p style="text-align: center; color: #64748b; margin: 40px 0;">Loading linked accounts...</p>
+    </div>
+  </main>
+  
+  <div id="notification" class="notification"></div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/supabaseClient.js"></script>
+  <script src="js/utils.js"></script>
+  <script src="js/family-dashboard.js"></script>
+</body>
+</html>
