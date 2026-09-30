@@ -545,31 +545,13 @@ async function handleLogin(e) {
     return;
   }
   
-  // Prepare for 2FA OTP
-  currentLoginData = data;
-  
-  // Show loading/notification
-  const btn = document.getElementById('loginBtn');
-  const originalText = btn.textContent;
-  btn.textContent = 'Sending OTP...';
-  btn.disabled = true;
-  
-  try {
-    await sendEmailOtp(data.email, 'Login');
-  } catch (error) {
-    showNotification(error.message, 'error');
-    btn.textContent = originalText;
-    btn.disabled = false;
-    return;
-  }
-  
-  btn.textContent = originalText;
-  btn.disabled = false;
-  
-  document.getElementById('loginForm').style.display = 'none';
-  document.getElementById('otpFormLogin').style.display = 'block';
-  showNotification('An OTP has been sent to your registered email.', 'success');
-  startOtpTimer('resendOtpBtnLogin', 'otpTimerDisplayLogin');
+  // Complete Login
+  localStorage.setItem('paymoney_user_id', data.id);
+  localStorage.setItem('paymoney_account_type', 'normal');
+  showNotification('Login successful! Redirecting...');
+  setTimeout(() => {
+    window.location.href = 'dashboard.html';
+  }, 1500);
 }
 
 // Handle Lite login form submission
