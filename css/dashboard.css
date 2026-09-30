@@ -274,6 +274,10 @@ body {
 }
 
 @media (max-width: 768px) {
+  #familyAccountsBtn {
+    display: none !important;
+  }
+  
   .action-grid {
     grid-template-columns: repeat(2, 1fr);
   }

@@ -1,524 +1,1994 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>PayMoney – Send money, pay bills, recharge</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700;900&display=swap" rel="stylesheet">
-<style>
-:root{--navy:#002b6e;--deep:#003d85;--sky:#00baf2;--sky-soft:#e6f8fe;--ink:#14213d;--muted:#5b6b85;--line:#e3e9f2;--bg:#f5f8fc;--ok:#1fa971;--ease:cubic-bezier(.2,.8,.2,1)}
-*{box-sizing:border-box;margin:0;padding:0}
-html{scroll-behavior:smooth;scroll-padding-top:80px}
-body{font-family:Roboto,system-ui,sans-serif;color:var(--ink);background:#fff;line-height:1.6;overflow-x:hidden}
-a{color:inherit;text-decoration:none}
-:focus-visible{outline:3px solid var(--sky);outline-offset:3px;border-radius:6px}
-.wrap{max-width:1180px;margin:0 auto;padding:0 24px}
-#bar{position:fixed;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--sky),var(--deep));transform:scaleX(0);transform-origin:0;z-index:50}
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>PayMoney – Send money, pay bills, recharge</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700;900&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --navy: #002b6e;
+      --deep: #003d85;
+      --sky: #00baf2;
+      --sky-soft: #e6f8fe;
+      --ink: #14213d;
+      --muted: #5b6b85;
+      --line: #e3e9f2;
+      --bg: #f5f8fc;
+      --ok: #1fa971;
+      --ease: cubic-bezier(.2, .8, .2, 1)
+    }
 
-header{position:sticky;top:0;z-index:20;background:rgba(255,255,255,.94);backdrop-filter:blur(8px);border-bottom:1px solid var(--line);transition:box-shadow .3s}
-header.scrolled{box-shadow:0 6px 24px rgba(0,43,110,.1)}
-.nav{display:flex;align-items:center;justify-content:space-between;height:72px}
-.brand{display:flex;align-items:center;gap:10px;font-weight:900;font-size:1.6rem;letter-spacing:-.5px;color:var(--navy)}
-.brand img{height:38px;width:auto;transition:transform .5s var(--ease)}
-.brand:hover img{transform:rotate(-12deg) scale(1.1)}
-.brand b{color:var(--sky)}
-nav ul{display:flex;gap:32px;list-style:none;font-weight:500}
-nav ul a{position:relative;padding:4px 0}
-nav ul a::after{content:"";position:absolute;left:0;bottom:-2px;height:2px;width:100%;background:var(--sky);transform:scaleX(0);transform-origin:right;transition:transform .35s var(--ease)}
-nav ul a:hover::after{transform:scaleX(1);transform-origin:left}
-.actions{display:flex;gap:12px}
-.btn{position:relative;overflow:hidden;display:inline-block;padding:11px 24px;border-radius:10px;font-weight:500;border:1.5px solid var(--sky);transition:transform .25s var(--ease),background .2s,box-shadow .25s}
-.btn:hover{transform:translateY(-3px);box-shadow:0 10px 22px rgba(0,186,242,.35)}
-.btn:active{transform:scale(.97)}
-.btn::after{content:"";position:absolute;top:0;left:-70%;width:40%;height:100%;background:rgba(255,255,255,.4);transform:skewX(-20deg);transition:left .6s}
-.btn:hover::after{left:130%}
-.btn-fill{background:var(--sky);color:#fff}
-.btn-line{color:var(--sky);background:#fff}
-.btn-lg{padding:14px 30px;font-size:1.05rem}
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0
+    }
 
-/* intro */
-#intro{display:none;position:fixed;inset:0;z-index:100;pointer-events:none}
-.intro #intro{display:block}
-html.intro{overflow:hidden}
-.bgc{position:absolute;inset:0;background:radial-gradient(circle at 50% 45%,var(--deep),var(--navy) 70%)}
-.il{position:fixed;left:0;top:0;transform-origin:0 0;color:#fff;opacity:0;will-change:transform}
-.pulse{position:absolute;left:50%;top:50%;width:140px;height:140px;margin:-70px 0 0 -70px;border-radius:50%;border:2px solid var(--sky);opacity:0;animation:pulse2 1.3s .45s ease-out}
-@keyframes pulse2{0%{opacity:.8;transform:scale(.6)}100%{opacity:0;transform:scale(4.5)}}
-.intro .nav .brand{visibility:hidden}
-.intro .nav nav,.intro .actions{opacity:0}
-.intro.flying .nav nav,.intro.flying .actions{opacity:1}
-.nav nav,.actions{transition:opacity .7s}
-.js:not(.ready) .w>span,.js:not(.ready) .fadeup{animation-play-state:paused}
+    html {
+      scroll-behavior: smooth;
+      scroll-padding-top: 80px
+    }
 
-/* hero */
-.hero{position:relative;background:linear-gradient(135deg,var(--navy),var(--deep) 50%,#0086c9);background-size:160% 160%;animation:drift 14s ease-in-out infinite alternate;color:#fff;overflow:hidden}
-@keyframes drift{to{background-position:100% 100%}}
-.blob{position:absolute;border-radius:50%;filter:blur(60px);opacity:.5;pointer-events:none}
-.b1{width:420px;height:420px;background:var(--sky);top:-120px;right:8%;animation:fl1 11s ease-in-out infinite alternate}
-.b2{width:320px;height:320px;background:#2e6bff;bottom:-140px;left:32%;animation:fl2 13s ease-in-out infinite alternate}
-@keyframes fl1{to{transform:translate(-90px,80px) scale(1.15)}}
-@keyframes fl2{to{transform:translate(110px,-60px) scale(.9)}}
-.hero .wrap{position:relative;display:grid;grid-template-columns:1.1fr .9fr;gap:40px;align-items:center;min-height:640px;padding-top:56px;padding-bottom:56px}
-.hero h1{font-size:clamp(2.3rem,5vw,3.7rem);line-height:1.1;font-weight:900;letter-spacing:-1.2px;max-width:13ch}
-.w{display:inline-block;overflow:hidden;vertical-align:top;padding-bottom:.08em}
-.w>span{display:inline-block;transform:translateY(115%);animation:rise .9s calc(var(--i)*.09s + .15s) var(--ease) forwards}
-@keyframes rise{to{transform:none}}
-.hero p{font-size:1.2rem;opacity:.92;margin:22px 0 32px;max-width:46ch}
-.hero .cta{display:flex;gap:14px;flex-wrap:wrap}
-.hero .btn-line{background:transparent;color:#fff;border-color:rgba(255,255,255,.6)}
-.hero .note{font-size:.95rem;opacity:.8;margin:22px 0 0}
-.fadeup{opacity:0;transform:translateY(18px);animation:fu .8s calc(.7s + var(--d,0s)) var(--ease) forwards}
-@keyframes fu{to{opacity:1;transform:none}}
+    body {
+      font-family: Roboto, system-ui, sans-serif;
+      color: var(--ink);
+      background: #fff;
+      line-height: 1.6;
+      overflow-x: hidden
+    }
 
-.stage{position:relative;display:flex;justify-content:center;perspective:1000px}
-.float{animation:bob 5s ease-in-out infinite alternate}
-@keyframes bob{to{transform:translateY(-14px)}}
-.phone{width:290px;background:#0a1a3a;border-radius:38px;padding:12px;box-shadow:0 40px 80px rgba(0,20,60,.55);transition:transform .2s ease-out;transform-style:preserve-3d}
-.screen{background:var(--bg);border-radius:28px;padding:20px 16px 18px;color:var(--ink);min-height:520px;overflow:hidden}
-.top{display:flex;justify-content:space-between;font-size:.8rem;color:var(--muted);margin-bottom:14px}
-.bal{background:linear-gradient(135deg,var(--deep),var(--sky));color:#fff;border-radius:18px;padding:18px;position:relative;overflow:hidden}
-.bal::after{content:"";position:absolute;top:0;left:-60%;width:40%;height:100%;background:rgba(255,255,255,.25);transform:skewX(-20deg);animation:sheen 4.5s 1.5s infinite}
-@keyframes sheen{to{left:140%}}
-.bal small{opacity:.85}.bal span{font-size:.8rem;opacity:.85}
-.bal strong{display:block;font-size:2rem;font-weight:700;letter-spacing:-.5px;font-variant-numeric:tabular-nums}
-.quick{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:16px 0}
-.quick div{text-align:center;font-size:.68rem;color:var(--muted)}
-.quick i{display:block;height:44px;border-radius:14px;background:#fff;border:1px solid var(--line);margin-bottom:4px;position:relative}
-.quick i::after{content:"";position:absolute;inset:14px;border-radius:6px;background:var(--sky)}
-.quick div:nth-child(2) i::after{background:#ffb84d}.quick div:nth-child(3) i::after{background:var(--ok)}.quick div:nth-child(4) i::after{background:#7b83eb}
-.quick div{animation:pulse 3.6s infinite}.quick div:nth-child(2){animation-delay:.3s}.quick div:nth-child(3){animation-delay:.6s}.quick div:nth-child(4){animation-delay:.9s}
-@keyframes pulse{0%,70%,100%{transform:none}80%{transform:translateY(-5px)}}
-#feed{height:150px;overflow:hidden}
-.tx{background:#fff;border:1px solid var(--line);border-radius:14px;padding:10px 12px;display:flex;justify-content:space-between;font-size:.82rem;margin-bottom:8px;animation:slidein .5s var(--ease)}
-@keyframes slidein{from{opacity:0;transform:translateY(-24px)}}
-.tx em{font-style:normal;font-weight:700}.out{color:#d64545}.in{color:var(--ok)}
-.sent{position:absolute;left:-10px;bottom:56px;background:#fff;color:var(--ink);border-radius:16px;padding:14px 18px;box-shadow:0 18px 40px rgba(0,20,60,.35);display:flex;gap:12px;align-items:center;opacity:0;pointer-events:none}
-.sent.show{animation:pop 2.4s var(--ease)}
-@keyframes pop{0%{opacity:0;transform:translateY(16px) scale(.9)}12%,80%{opacity:1;transform:none}100%{opacity:0;transform:translateY(-10px)}}
-.tick{width:34px;height:34px;border-radius:50%;background:var(--ok);color:#fff;display:grid;place-items:center;font-weight:700}
-.sent b{display:block;font-size:.95rem}.sent span{font-size:.8rem;color:var(--muted)}
+    a {
+      color: inherit;
+      text-decoration: none
+    }
 
-/* sections */
-section{padding:88px 0}
-h2{font-size:clamp(1.7rem,3vw,2.4rem);line-height:1.2;letter-spacing:-.6px;font-weight:700;color:var(--navy);max-width:22ch}
-.lead{color:var(--muted);font-size:1.1rem;max-width:56ch;margin-top:12px}
-.js .rv{opacity:0;transform:translateY(30px);transition:opacity .8s var(--ease),transform .8s var(--ease);transition-delay:calc(var(--i,0)*100ms)}
-.js .rv.in{opacity:1;transform:none}
+    :focus-visible {
+      outline: 3px solid var(--sky);
+      outline-offset: 3px;
+      border-radius: 6px
+    }
 
-/* marquee */
-.mq{background:var(--bg);border-block:1px solid var(--line);padding:18px 0;overflow:hidden}
-.track{display:flex;gap:56px;width:max-content;animation:mq 30s linear infinite;font-weight:700;font-size:1.15rem;color:var(--navy);opacity:.7}
-.mq:hover .track{animation-play-state:paused}
-.track span::before{content:"";display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--sky);margin-right:14px}
-@keyframes mq{to{transform:translateX(-50%)}}
+    .wrap {
+      max-width: 1180px;
+      margin: 0 auto;
+      padding: 0 24px
+    }
 
-.feat{display:grid;grid-template-columns:1fr 1.15fr;gap:32px;margin-top:44px}
-.big{background:var(--navy);color:#fff;border-radius:24px;padding:40px;position:relative;overflow:hidden}
-.big::before{content:"";position:absolute;width:280px;height:280px;border-radius:50%;background:var(--sky);opacity:.18;filter:blur(40px);right:-80px;top:-80px;animation:fl1 9s ease-in-out infinite alternate}
-.big h3{font-size:1.6rem;line-height:1.25;margin-bottom:12px}
-.big p{opacity:.85;margin-bottom:24px}
-.chip{display:inline-block;background:rgba(255,255,255,.12);border-radius:999px;padding:6px 14px;font-size:.9rem;margin:0 6px 8px 0;transition:background .2s,transform .3s var(--ease)}
-.chip:hover{background:var(--sky);transform:translateY(-3px)}
-.list{display:flex;flex-direction:column;justify-content:space-between}
-.row{display:flex;gap:18px;padding:22px 0;border-bottom:1px solid var(--line);transition:transform .35s var(--ease)}
-.row:hover{transform:translateX(10px)}
-.row:first-child{padding-top:0}.row:last-child{border:0;padding-bottom:0}
-.ico{flex:none;width:52px;height:52px;border-radius:50%;display:grid;place-items:center;font-size:1.3rem;font-weight:700;transition:transform .5s var(--ease)}
-.row:hover .ico{transform:rotate(360deg) scale(1.1)}
-.row h3{font-size:1.15rem;color:var(--navy)}.row p{color:var(--muted);font-size:.98rem}
+    #bar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, var(--sky), var(--deep));
+      transform: scaleX(0);
+      transform-origin: 0;
+      z-index: 50
+    }
 
-/* sticky steps */
-.how{background:var(--bg)}
-.how-grid{display:grid;grid-template-columns:1fr 340px;gap:64px;align-items:start}
-.stp{min-height:62vh;display:flex;flex-direction:column;justify-content:center;opacity:.35;transition:opacity .5s,transform .5s var(--ease);border-left:3px solid var(--line);padding-left:28px}
-.stp.on{opacity:1;transform:translateX(8px);border-color:var(--sky)}
-.stp h3{font-size:1.5rem;color:var(--navy);margin-bottom:8px}.stp p{color:var(--muted);max-width:40ch}
-.stp:first-of-type{margin-top:24px}
-.sticky{position:sticky;top:110px}
-.sticky .screen{position:relative;min-height:470px}
-.scr{position:absolute;inset:20px 16px;opacity:0;transform:scale(.96);transition:opacity .5s,transform .5s var(--ease);pointer-events:none}
-.scr.on{opacity:1;transform:none}
-.scr h4{color:var(--navy);margin-bottom:16px;font-size:1.1rem}
-.fld{height:42px;background:#fff;border:1px solid var(--line);border-radius:10px;margin-bottom:10px;padding:14px 12px}
-.fld i{display:block;height:8px;border-radius:4px;background:var(--sky);width:0}
-.scr.on .fld i{animation:type 1.1s calc(var(--k)*.5s + .3s) var(--ease) forwards}
-@keyframes type{to{width:var(--w)}}
-.otp{display:flex;gap:6px;margin-top:18px}
-.otp b{flex:1;height:44px;border-radius:10px;background:#fff;border:1.5px solid var(--sky);display:grid;place-items:center;color:var(--navy);opacity:0}
-.scr.on .otp b{animation:pop2 .4s calc(var(--k)*.15s + 1.8s) var(--ease) forwards}
-@keyframes pop2{from{opacity:0;transform:scale(.4)}to{opacity:1;transform:none}}
-.bank{background:#fff;border:1px solid var(--line);border-radius:14px;padding:12px;display:flex;gap:10px;align-items:center;font-size:.85rem;transform:translateX(120%)}
-.scr.on .bank{animation:sl .6s .2s var(--ease) forwards}
-@keyframes sl{to{transform:none}}
-.bank i{width:34px;height:34px;border-radius:10px;background:var(--deep)}
-.dots{display:flex;gap:14px;justify-content:center;margin:34px 0 10px}
-.dots i{width:18px;height:18px;border-radius:50%;border:2px solid var(--sky)}
-.scr.on .dots i{animation:fill .3s calc(var(--k)*.4s + 1s) forwards}
-@keyframes fill{to{background:var(--sky);transform:scale(1.2)}}
-.pay{text-align:center;padding-top:26px}
-.pay .amt{font-size:2.4rem;font-weight:900;color:var(--navy)}
-.ring{width:110px;height:110px;margin:20px auto}
-.ring circle,.ring path{fill:none;stroke:var(--ok);stroke-width:6;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:1;stroke-dashoffset:1}
-.scr.on .ring circle{animation:draw .8s .3s forwards}
-.scr.on .ring path{animation:draw .5s 1s forwards}
-@keyframes draw{to{stroke-dashoffset:0}}
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      background: rgba(255, 255, 255, .94);
+      backdrop-filter: blur(8px);
+      border-bottom: 1px solid var(--line);
+      transition: box-shadow .3s
+    }
 
-/* fd calculator */
-.calc{display:grid;grid-template-columns:1fr 1fr;gap:48px;align-items:center;margin-top:40px}
-.plans{display:flex;gap:10px;flex-wrap:wrap;margin:18px 0 26px}
-.plans button{font:inherit;padding:10px 18px;border-radius:999px;border:1.5px solid var(--line);background:#fff;cursor:pointer;transition:all .25s var(--ease)}
-.plans button:hover{border-color:var(--sky)}
-.plans button.on{background:var(--sky);border-color:var(--sky);color:#fff;transform:scale(1.06)}
-input[type=range]{width:100%;accent-color:var(--sky);height:6px}
-.amt-l{display:flex;justify-content:space-between;font-weight:500;margin-bottom:10px}
-.result{background:var(--navy);color:#fff;border-radius:24px;padding:36px}
-.result small{opacity:.8}
-.result strong{display:block;font-size:2.8rem;font-weight:900;letter-spacing:-1px;font-variant-numeric:tabular-nums}
-.split{display:flex;height:14px;border-radius:7px;overflow:hidden;background:rgba(255,255,255,.15);margin:20px 0 10px}
-.split i{display:block;transition:width .7s var(--ease)}
-.split .p{background:#fff}.split .g{background:var(--sky)}
-.legend{display:flex;justify-content:space-between;font-size:.9rem;opacity:.9}
+    header.scrolled {
+      box-shadow: 0 6px 24px rgba(0, 43, 110, .1)
+    }
 
-/* lite */
-.lite{background:linear-gradient(180deg,var(--sky-soft),#fff)}
-.lite-grid{display:grid;grid-template-columns:1fr 1fr;gap:56px;align-items:center}
-.lite .row{border:0;padding:14px 0}
-.lite .btn{margin-top:22px}
-.lk{max-width:420px;width:100%;margin:0 auto}
-.acc{background:#fff;border:1px solid var(--line);border-radius:20px;padding:20px;box-shadow:0 20px 50px rgba(0,43,110,.12)}
-.acc.par{background:var(--navy);color:#fff;border:0}
-.who{display:flex;align-items:center;gap:12px}
-.who small{display:block;opacity:.75;font-size:.8rem}
-.av{width:42px;height:42px;border-radius:50%;background:var(--sky);color:#fff;display:grid;place-items:center;font-weight:700}
-.pill{margin-left:auto;font-size:.75rem;font-weight:700;background:var(--sky);color:#fff;border-radius:999px;padding:3px 10px}
-.link{height:64px;width:3px;margin:0 auto;background:repeating-linear-gradient(var(--sky) 0 6px,transparent 6px 12px);position:relative}
-.link::after{content:"absolute";left:50%;top:0;width:12px;height:12px;margin-left:-6px;border-radius:50%;background:var(--sky);box-shadow:0 0 0 6px rgba(0,186,242,.25);animation:trav 1.8s ease-in-out infinite alternate}
-@keyframes trav{to{top:calc(100% - 12px)}}
-.link span{position:absolute;left:18px;top:50%;transform:translateY(-50%);font-size:.8rem;color:var(--muted);white-space:nowrap}
-.spent{display:flex;justify-content:space-between;align-items:baseline;margin:16px 0 8px;color:var(--muted);font-size:.9rem}
-.spent strong{font-size:1.5rem;color:var(--navy);font-variant-numeric:tabular-nums}
-.acc ul{list-style:none}
-.acc li{display:flex;justify-content:space-between;padding:9px 0;border-top:1px solid var(--line);font-size:.92rem}
-.lite-vis.in li{animation:slidein .5s calc(var(--k)*.25s + .6s) var(--ease) backwards}
-.facts{display:grid;grid-template-columns:repeat(4,1fr);gap:24px;margin-top:40px}
-.facts div{border-left:3px solid var(--sky);padding-left:18px}
-.facts strong{display:block;font-size:2.1rem;line-height:1.1;color:var(--navy);font-weight:900}
-.facts span{color:var(--muted);font-size:.95rem}
+    .nav {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 72px
+    }
 
-.dl{background:linear-gradient(135deg,var(--navy),var(--deep));color:#fff}
-.dl .wrap{display:flex;justify-content:space-between;align-items:center;gap:32px;flex-wrap:wrap}
-.dl h2{color:#fff}.dl .lead{color:rgba(255,255,255,.8)}
-.soon{display:inline-block;background:var(--sky);color:#fff;font-size:.8rem;font-weight:700;padding:3px 12px;border-radius:999px;vertical-align:middle;margin-left:10px;animation:glow 2s infinite}
-@keyframes glow{0%{box-shadow:0 0 0 0 rgba(0,186,242,.7)}100%{box-shadow:0 0 0 14px rgba(0,186,242,0)}}
-.stores{display:flex;gap:14px}
-.store{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.25);border-radius:12px;padding:10px 22px;line-height:1.3;cursor:not-allowed;transition:transform .3s var(--ease)}
-.store:hover{transform:translateY(-4px)}
-.store small{display:block;font-size:.75rem;opacity:.8}.store b{font-size:1.1rem}
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 900;
+      font-size: 1.6rem;
+      letter-spacing: -.5px;
+      color: var(--navy)
+    }
 
-footer{background:#00204f;color:#c8d4ea;padding:56px 0 28px}
-.fgrid{display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:32px}
-footer .brand{color:#fff}footer h4{color:#fff;margin-bottom:12px}
-footer li{list-style:none;margin-bottom:8px}footer li a{transition:color .2s,padding .3s}footer li a:hover{color:var(--sky);padding-left:6px}
-.copy{margin-top:40px;padding-top:20px;border-top:1px solid rgba(255,255,255,.12);font-size:.9rem}
+    .brand img {
+      height: 38px;
+      width: auto;
+      transition: transform .5s var(--ease)
+    }
 
-@media(max-width:900px){
-  nav ul{display:none}
-  .hero .wrap,.feat,.calc,.lite-grid{grid-template-columns:1fr}.hero .wrap{min-height:0}
-  .how-grid{grid-template-columns:1fr}.sticky{display:none}.stp{min-height:0;opacity:1;padding:18px 0 18px 24px}
-  .facts,.fgrid{grid-template-columns:1fr 1fr}.sent{left:auto;right:0}
-}
-@media(max-width:520px){.actions .btn-line{display:none}.facts,.fgrid{grid-template-columns:1fr}.stores{flex-direction:column;width:100%}}
-@media(prefers-reduced-motion:reduce){
-  *,*::before,*::after{animation:none!important;transition:none!important}
-  html{scroll-behavior:auto}
-  .w>span,.fadeup,.js .rv{transform:none;opacity:1}
-  .fld i{width:var(--w)}.otp b,.dots i.f{opacity:1}.bank{transform:none}.ring circle,.ring path{stroke-dashoffset:0}
-}
-</style>
-<script>document.documentElement.classList.add("js","intro")</script>
+    .brand:hover img {
+      transform: rotate(-12deg) scale(1.1)
+    }
+
+    .brand b {
+      color: var(--sky)
+    }
+
+    nav ul {
+      display: flex;
+      gap: 32px;
+      list-style: none;
+      font-weight: 500
+    }
+
+    nav ul a {
+      position: relative;
+      padding: 4px 0
+    }
+
+    nav ul a::after {
+      content: "";
+      position: absolute;
+      left: 0;
+      bottom: -2px;
+      height: 2px;
+      width: 100%;
+      background: var(--sky);
+      transform: scaleX(0);
+      transform-origin: right;
+      transition: transform .35s var(--ease)
+    }
+
+    nav ul a:hover::after {
+      transform: scaleX(1);
+      transform-origin: left
+    }
+
+    .actions {
+      display: flex;
+      gap: 12px
+    }
+
+    .btn {
+      position: relative;
+      overflow: hidden;
+      display: inline-block;
+      padding: 11px 24px;
+      border-radius: 10px;
+      font-weight: 500;
+      border: 1.5px solid var(--sky);
+      transition: transform .25s var(--ease), background .2s, box-shadow .25s
+    }
+
+    .btn:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 10px 22px rgba(0, 186, 242, .35)
+    }
+
+    .btn:active {
+      transform: scale(.97)
+    }
+
+    .btn::after {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: -70%;
+      width: 40%;
+      height: 100%;
+      background: rgba(255, 255, 255, .4);
+      transform: skewX(-20deg);
+      transition: left .6s
+    }
+
+    .btn:hover::after {
+      left: 130%
+    }
+
+    .btn-fill {
+      background: var(--sky);
+      color: #fff
+    }
+
+    .btn-line {
+      color: var(--sky);
+      background: #fff
+    }
+
+    .btn-lg {
+      padding: 14px 30px;
+      font-size: 1.05rem
+    }
+
+    /* intro */
+    #intro {
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 100;
+      pointer-events: none
+    }
+
+    .intro #intro {
+      display: block
+    }
+
+    html.intro {
+      overflow: hidden
+    }
+
+    .bgc {
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle at 50% 45%, var(--deep), var(--navy) 70%)
+    }
+
+    .il {
+      position: fixed;
+      left: 0;
+      top: 0;
+      transform-origin: 0 0;
+      color: #fff;
+      opacity: 0;
+      will-change: transform
+    }
+
+    .pulse {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      width: 140px;
+      height: 140px;
+      margin: -70px 0 0 -70px;
+      border-radius: 50%;
+      border: 2px solid var(--sky);
+      opacity: 0;
+      animation: pulse2 1.3s .45s ease-out
+    }
+
+    @keyframes pulse2 {
+      0% {
+        opacity: .8;
+        transform: scale(.6)
+      }
+
+      100% {
+        opacity: 0;
+        transform: scale(4.5)
+      }
+    }
+
+    .intro .nav .brand {
+      visibility: hidden
+    }
+
+    .intro .nav nav,
+    .intro .actions {
+      opacity: 0
+    }
+
+    .intro.flying .nav nav,
+    .intro.flying .actions {
+      opacity: 1
+    }
+
+    .nav nav,
+    .actions {
+      transition: opacity .7s
+    }
+
+    .js:not(.ready) .w>span,
+    .js:not(.ready) .fadeup {
+      animation-play-state: paused
+    }
+
+    /* hero */
+    .hero {
+      position: relative;
+      background: linear-gradient(135deg, var(--navy), var(--deep) 50%, #0086c9);
+      background-size: 160% 160%;
+      animation: drift 14s ease-in-out infinite alternate;
+      color: #fff;
+      overflow: hidden
+    }
+
+    @keyframes drift {
+      to {
+        background-position: 100% 100%
+      }
+    }
+
+    .blob {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(60px);
+      opacity: .5;
+      pointer-events: none
+    }
+
+    .b1 {
+      width: 420px;
+      height: 420px;
+      background: var(--sky);
+      top: -120px;
+      right: 8%;
+      animation: fl1 11s ease-in-out infinite alternate
+    }
+
+    .b2 {
+      width: 320px;
+      height: 320px;
+      background: #2e6bff;
+      bottom: -140px;
+      left: 32%;
+      animation: fl2 13s ease-in-out infinite alternate
+    }
+
+    @keyframes fl1 {
+      to {
+        transform: translate(-90px, 80px) scale(1.15)
+      }
+    }
+
+    @keyframes fl2 {
+      to {
+        transform: translate(110px, -60px) scale(.9)
+      }
+    }
+
+    .hero .wrap {
+      position: relative;
+      display: grid;
+      grid-template-columns: 1.1fr .9fr;
+      gap: 40px;
+      align-items: center;
+      min-height: 640px;
+      padding-top: 56px;
+      padding-bottom: 56px
+    }
+
+    .hero h1 {
+      font-size: clamp(2.3rem, 5vw, 3.7rem);
+      line-height: 1.1;
+      font-weight: 900;
+      letter-spacing: -1.2px;
+      max-width: 13ch
+    }
+
+    .w {
+      display: inline-block;
+      overflow: hidden;
+      vertical-align: top;
+      padding-bottom: .08em
+    }
+
+    .w>span {
+      display: inline-block;
+      transform: translateY(115%);
+      animation: rise .9s calc(var(--i)*.09s + .15s) var(--ease) forwards
+    }
+
+    @keyframes rise {
+      to {
+        transform: none
+      }
+    }
+
+    .hero p {
+      font-size: 1.2rem;
+      opacity: .92;
+      margin: 22px 0 32px;
+      max-width: 46ch
+    }
+
+    .hero .cta {
+      display: flex;
+      gap: 14px;
+      flex-wrap: wrap
+    }
+
+    .hero .btn-line {
+      background: transparent;
+      color: #fff;
+      border-color: rgba(255, 255, 255, .6)
+    }
+
+    .hero .note {
+      font-size: .95rem;
+      opacity: .8;
+      margin: 22px 0 0
+    }
+
+    .fadeup {
+      opacity: 0;
+      transform: translateY(18px);
+      animation: fu .8s calc(.7s + var(--d, 0s)) var(--ease) forwards
+    }
+
+    @keyframes fu {
+      to {
+        opacity: 1;
+        transform: none
+      }
+    }
+
+    .stage {
+      position: relative;
+      display: flex;
+      justify-content: center;
+      perspective: 1000px
+    }
+
+    .float {
+      animation: bob 5s ease-in-out infinite alternate
+    }
+
+    @keyframes bob {
+      to {
+        transform: translateY(-14px)
+      }
+    }
+
+    .phone {
+      width: 290px;
+      background: #0a1a3a;
+      border-radius: 38px;
+      padding: 12px;
+      box-shadow: 0 40px 80px rgba(0, 20, 60, .55);
+      transition: transform .2s ease-out;
+      transform-style: preserve-3d
+    }
+
+    .screen {
+      background: var(--bg);
+      border-radius: 28px;
+      padding: 20px 16px 18px;
+      color: var(--ink);
+      min-height: 520px;
+      overflow: hidden
+    }
+
+    .top {
+      display: flex;
+      justify-content: space-between;
+      font-size: .8rem;
+      color: var(--muted);
+      margin-bottom: 14px
+    }
+
+    .bal {
+      background: linear-gradient(135deg, var(--deep), var(--sky));
+      color: #fff;
+      border-radius: 18px;
+      padding: 18px;
+      position: relative;
+      overflow: hidden
+    }
+
+    .bal::after {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: -60%;
+      width: 40%;
+      height: 100%;
+      background: rgba(255, 255, 255, .25);
+      transform: skewX(-20deg);
+      animation: sheen 4.5s 1.5s infinite
+    }
+
+    @keyframes sheen {
+      to {
+        left: 140%
+      }
+    }
+
+    .bal small {
+      opacity: .85
+    }
+
+    .bal span {
+      font-size: .8rem;
+      opacity: .85
+    }
+
+    .bal strong {
+      display: block;
+      font-size: 2rem;
+      font-weight: 700;
+      letter-spacing: -.5px;
+      font-variant-numeric: tabular-nums
+    }
+
+    .quick {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px;
+      margin: 16px 0
+    }
+
+    .quick div {
+      text-align: center;
+      font-size: .68rem;
+      color: var(--muted)
+    }
+
+    .quick i {
+      display: block;
+      height: 44px;
+      border-radius: 14px;
+      background: #fff;
+      border: 1px solid var(--line);
+      margin-bottom: 4px;
+      position: relative
+    }
+
+    .quick i::after {
+      content: "";
+      position: absolute;
+      inset: 14px;
+      border-radius: 6px;
+      background: var(--sky)
+    }
+
+    .quick div:nth-child(2) i::after {
+      background: #ffb84d
+    }
+
+    .quick div:nth-child(3) i::after {
+      background: var(--ok)
+    }
+
+    .quick div:nth-child(4) i::after {
+      background: #7b83eb
+    }
+
+    .quick div {
+      animation: pulse 3.6s infinite
+    }
+
+    .quick div:nth-child(2) {
+      animation-delay: .3s
+    }
+
+    .quick div:nth-child(3) {
+      animation-delay: .6s
+    }
+
+    .quick div:nth-child(4) {
+      animation-delay: .9s
+    }
+
+    @keyframes pulse {
+
+      0%,
+      70%,
+      100% {
+        transform: none
+      }
+
+      80% {
+        transform: translateY(-5px)
+      }
+    }
+
+    #feed {
+      height: 150px;
+      overflow: hidden
+    }
+
+    .tx {
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 10px 12px;
+      display: flex;
+      justify-content: space-between;
+      font-size: .82rem;
+      margin-bottom: 8px;
+      animation: slidein .5s var(--ease)
+    }
+
+    @keyframes slidein {
+      from {
+        opacity: 0;
+        transform: translateY(-24px)
+      }
+    }
+
+    .tx em {
+      font-style: normal;
+      font-weight: 700
+    }
+
+    .out {
+      color: #d64545
+    }
+
+    .in {
+      color: var(--ok)
+    }
+
+    .sent {
+      position: absolute;
+      left: -10px;
+      bottom: 56px;
+      background: #fff;
+      color: var(--ink);
+      border-radius: 16px;
+      padding: 14px 18px;
+      box-shadow: 0 18px 40px rgba(0, 20, 60, .35);
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      opacity: 0;
+      pointer-events: none
+    }
+
+    .sent.show {
+      animation: pop 2.4s var(--ease)
+    }
+
+    @keyframes pop {
+      0% {
+        opacity: 0;
+        transform: translateY(16px) scale(.9)
+      }
+
+      12%,
+      80% {
+        opacity: 1;
+        transform: none
+      }
+
+      100% {
+        opacity: 0;
+        transform: translateY(-10px)
+      }
+    }
+
+    .tick {
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      background: var(--ok);
+      color: #fff;
+      display: grid;
+      place-items: center;
+      font-weight: 700
+    }
+
+    .sent b {
+      display: block;
+      font-size: .95rem
+    }
+
+    .sent span {
+      font-size: .8rem;
+      color: var(--muted)
+    }
+
+    /* sections */
+    section {
+      padding: 88px 0
+    }
+
+    h2 {
+      font-size: clamp(1.7rem, 3vw, 2.4rem);
+      line-height: 1.2;
+      letter-spacing: -.6px;
+      font-weight: 700;
+      color: var(--navy);
+      max-width: 22ch
+    }
+
+    .lead {
+      color: var(--muted);
+      font-size: 1.1rem;
+      max-width: 56ch;
+      margin-top: 12px
+    }
+
+    .js .rv {
+      opacity: 0;
+      transform: translateY(30px);
+      transition: opacity .8s var(--ease), transform .8s var(--ease);
+      transition-delay: calc(var(--i, 0)*100ms)
+    }
+
+    .js .rv.in {
+      opacity: 1;
+      transform: none
+    }
+
+    /* marquee */
+    .mq {
+      background: var(--bg);
+      border-block: 1px solid var(--line);
+      padding: 18px 0;
+      overflow: hidden
+    }
+
+    .track {
+      display: flex;
+      gap: 56px;
+      width: max-content;
+      animation: mq 30s linear infinite;
+      font-weight: 700;
+      font-size: 1.15rem;
+      color: var(--navy);
+      opacity: .7
+    }
+
+    .mq:hover .track {
+      animation-play-state: paused
+    }
+
+    .track span::before {
+      content: "";
+      display: inline-block;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--sky);
+      margin-right: 14px
+    }
+
+    @keyframes mq {
+      to {
+        transform: translateX(-50%)
+      }
+    }
+
+    .feat {
+      display: grid;
+      grid-template-columns: 1fr 1.15fr;
+      gap: 32px;
+      margin-top: 44px
+    }
+
+    .big {
+      background: var(--navy);
+      color: #fff;
+      border-radius: 24px;
+      padding: 40px;
+      position: relative;
+      overflow: hidden
+    }
+
+    .big::before {
+      content: "";
+      position: absolute;
+      width: 280px;
+      height: 280px;
+      border-radius: 50%;
+      background: var(--sky);
+      opacity: .18;
+      filter: blur(40px);
+      right: -80px;
+      top: -80px;
+      animation: fl1 9s ease-in-out infinite alternate
+    }
+
+    .big h3 {
+      font-size: 1.6rem;
+      line-height: 1.25;
+      margin-bottom: 12px
+    }
+
+    .big p {
+      opacity: .85;
+      margin-bottom: 24px
+    }
+
+    .chip {
+      display: inline-block;
+      background: rgba(255, 255, 255, .12);
+      border-radius: 999px;
+      padding: 6px 14px;
+      font-size: .9rem;
+      margin: 0 6px 8px 0;
+      transition: background .2s, transform .3s var(--ease)
+    }
+
+    .chip:hover {
+      background: var(--sky);
+      transform: translateY(-3px)
+    }
+
+    .list {
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between
+    }
+
+    .row {
+      display: flex;
+      gap: 18px;
+      padding: 22px 0;
+      border-bottom: 1px solid var(--line);
+      transition: transform .35s var(--ease)
+    }
+
+    .row:hover {
+      transform: translateX(10px)
+    }
+
+    .row:first-child {
+      padding-top: 0
+    }
+
+    .row:last-child {
+      border: 0;
+      padding-bottom: 0
+    }
+
+    .ico {
+      flex: none;
+      width: 52px;
+      height: 52px;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      font-size: 1.3rem;
+      font-weight: 700;
+      transition: transform .5s var(--ease)
+    }
+
+    .row:hover .ico {
+      transform: rotate(360deg) scale(1.1)
+    }
+
+    .row h3 {
+      font-size: 1.15rem;
+      color: var(--navy)
+    }
+
+    .row p {
+      color: var(--muted);
+      font-size: .98rem
+    }
+
+    /* sticky steps */
+    .how {
+      background: var(--bg)
+    }
+
+    .how-grid {
+      display: grid;
+      grid-template-columns: 1fr 340px;
+      gap: 64px;
+      align-items: start
+    }
+
+    .stp {
+      min-height: 62vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      opacity: .35;
+      transition: opacity .5s, transform .5s var(--ease);
+      border-left: 3px solid var(--line);
+      padding-left: 28px
+    }
+
+    .stp.on {
+      opacity: 1;
+      transform: translateX(8px);
+      border-color: var(--sky)
+    }
+
+    .stp h3 {
+      font-size: 1.5rem;
+      color: var(--navy);
+      margin-bottom: 8px
+    }
+
+    .stp p {
+      color: var(--muted);
+      max-width: 40ch
+    }
+
+    .stp:first-of-type {
+      margin-top: 24px
+    }
+
+    .sticky {
+      position: sticky;
+      top: 110px
+    }
+
+    .sticky .screen {
+      position: relative;
+      min-height: 470px
+    }
+
+    .scr {
+      position: absolute;
+      inset: 20px 16px;
+      opacity: 0;
+      transform: scale(.96);
+      transition: opacity .5s, transform .5s var(--ease);
+      pointer-events: none
+    }
+
+    .scr.on {
+      opacity: 1;
+      transform: none
+    }
+
+    .scr h4 {
+      color: var(--navy);
+      margin-bottom: 16px;
+      font-size: 1.1rem
+    }
+
+    .fld {
+      height: 42px;
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      margin-bottom: 10px;
+      padding: 14px 12px
+    }
+
+    .fld i {
+      display: block;
+      height: 8px;
+      border-radius: 4px;
+      background: var(--sky);
+      width: 0
+    }
+
+    .scr.on .fld i {
+      animation: type 1.1s calc(var(--k)*.5s + .3s) var(--ease) forwards
+    }
+
+    @keyframes type {
+      to {
+        width: var(--w)
+      }
+    }
+
+    .otp {
+      display: flex;
+      gap: 6px;
+      margin-top: 18px
+    }
+
+    .otp b {
+      flex: 1;
+      height: 44px;
+      border-radius: 10px;
+      background: #fff;
+      border: 1.5px solid var(--sky);
+      display: grid;
+      place-items: center;
+      color: var(--navy);
+      opacity: 0
+    }
+
+    .scr.on .otp b {
+      animation: pop2 .4s calc(var(--k)*.15s + 1.8s) var(--ease) forwards
+    }
+
+    @keyframes pop2 {
+      from {
+        opacity: 0;
+        transform: scale(.4)
+      }
+
+      to {
+        opacity: 1;
+        transform: none
+      }
+    }
+
+    .bank {
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 12px;
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      font-size: .85rem;
+      transform: translateX(120%)
+    }
+
+    .scr.on .bank {
+      animation: sl .6s .2s var(--ease) forwards
+    }
+
+    @keyframes sl {
+      to {
+        transform: none
+      }
+    }
+
+    .bank i {
+      width: 34px;
+      height: 34px;
+      border-radius: 10px;
+      background: var(--deep)
+    }
+
+    .dots {
+      display: flex;
+      gap: 14px;
+      justify-content: center;
+      margin: 34px 0 10px
+    }
+
+    .dots i {
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      border: 2px solid var(--sky)
+    }
+
+    .scr.on .dots i {
+      animation: fill .3s calc(var(--k)*.4s + 1s) forwards
+    }
+
+    @keyframes fill {
+      to {
+        background: var(--sky);
+        transform: scale(1.2)
+      }
+    }
+
+    .pay {
+      text-align: center;
+      padding-top: 26px
+    }
+
+    .pay .amt {
+      font-size: 2.4rem;
+      font-weight: 900;
+      color: var(--navy)
+    }
+
+    .ring {
+      width: 110px;
+      height: 110px;
+      margin: 20px auto
+    }
+
+    .ring circle,
+    .ring path {
+      fill: none;
+      stroke: var(--ok);
+      stroke-width: 6;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      stroke-dasharray: 1;
+      stroke-dashoffset: 1
+    }
+
+    .scr.on .ring circle {
+      animation: draw .8s .3s forwards
+    }
+
+    .scr.on .ring path {
+      animation: draw .5s 1s forwards
+    }
+
+    @keyframes draw {
+      to {
+        stroke-dashoffset: 0
+      }
+    }
+
+    /* fd calculator */
+    .calc {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 48px;
+      align-items: center;
+      margin-top: 40px
+    }
+
+    .plans {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin: 18px 0 26px
+    }
+
+    .plans button {
+      font: inherit;
+      padding: 10px 18px;
+      border-radius: 999px;
+      border: 1.5px solid var(--line);
+      background: #fff;
+      cursor: pointer;
+      transition: all .25s var(--ease)
+    }
+
+    .plans button:hover {
+      border-color: var(--sky)
+    }
+
+    .plans button.on {
+      background: var(--sky);
+      border-color: var(--sky);
+      color: #fff;
+      transform: scale(1.06)
+    }
+
+    input[type=range] {
+      width: 100%;
+      accent-color: var(--sky);
+      height: 6px
+    }
+
+    .amt-l {
+      display: flex;
+      justify-content: space-between;
+      font-weight: 500;
+      margin-bottom: 10px
+    }
+
+    .result {
+      background: var(--navy);
+      color: #fff;
+      border-radius: 24px;
+      padding: 36px
+    }
+
+    .result small {
+      opacity: .8
+    }
+
+    .result strong {
+      display: block;
+      font-size: 2.8rem;
+      font-weight: 900;
+      letter-spacing: -1px;
+      font-variant-numeric: tabular-nums
+    }
+
+    .split {
+      display: flex;
+      height: 14px;
+      border-radius: 7px;
+      overflow: hidden;
+      background: rgba(255, 255, 255, .15);
+      margin: 20px 0 10px
+    }
+
+    .split i {
+      display: block;
+      transition: width .7s var(--ease)
+    }
+
+    .split .p {
+      background: #fff
+    }
+
+    .split .g {
+      background: var(--sky)
+    }
+
+    .legend {
+      display: flex;
+      justify-content: space-between;
+      font-size: .9rem;
+      opacity: .9
+    }
+
+    /* lite */
+    .lite {
+      background: linear-gradient(180deg, var(--sky-soft), #fff)
+    }
+
+    .lite-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 56px;
+      align-items: center
+    }
+
+    .lite .row {
+      border: 0;
+      padding: 14px 0
+    }
+
+    .lite .btn {
+      margin-top: 22px
+    }
+
+    .lk {
+      max-width: 420px;
+      width: 100%;
+      margin: 0 auto
+    }
+
+    .acc {
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: 20px;
+      padding: 20px;
+      box-shadow: 0 20px 50px rgba(0, 43, 110, .12)
+    }
+
+    .acc.par {
+      background: var(--navy);
+      color: #fff;
+      border: 0
+    }
+
+    .who {
+      display: flex;
+      align-items: center;
+      gap: 12px
+    }
+
+    .who small {
+      display: block;
+      opacity: .75;
+      font-size: .8rem
+    }
+
+    .av {
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      background: var(--sky);
+      color: #fff;
+      display: grid;
+      place-items: center;
+      font-weight: 700
+    }
+
+    .pill {
+      margin-left: auto;
+      font-size: .75rem;
+      font-weight: 700;
+      background: var(--sky);
+      color: #fff;
+      border-radius: 999px;
+      padding: 3px 10px
+    }
+
+    .link {
+      height: 64px;
+      width: 3px;
+      margin: 0 auto;
+      background: repeating-linear-gradient(var(--sky) 0 6px, transparent 6px 12px);
+      position: relative
+    }
+
+    .link::after {
+      content: "absolute";
+      left: 50%;
+      top: 0;
+      width: 12px;
+      height: 12px;
+      margin-left: -6px;
+      border-radius: 50%;
+      background: var(--sky);
+      box-shadow: 0 0 0 6px rgba(0, 186, 242, .25);
+      animation: trav 1.8s ease-in-out infinite alternate
+    }
+
+    @keyframes trav {
+      to {
+        top: calc(100% - 12px)
+      }
+    }
+
+    .link span {
+      position: absolute;
+      left: 18px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: .8rem;
+      color: var(--muted);
+      white-space: nowrap
+    }
+
+    .spent {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      margin: 16px 0 8px;
+      color: var(--muted);
+      font-size: .9rem
+    }
+
+    .spent strong {
+      font-size: 1.5rem;
+      color: var(--navy);
+      font-variant-numeric: tabular-nums
+    }
+
+    .acc ul {
+      list-style: none
+    }
+
+    .acc li {
+      display: flex;
+      justify-content: space-between;
+      padding: 9px 0;
+      border-top: 1px solid var(--line);
+      font-size: .92rem
+    }
+
+    .lite-vis.in li {
+      animation: slidein .5s calc(var(--k)*.25s + .6s) var(--ease) backwards
+    }
+
+    .facts {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 24px;
+      margin-top: 40px
+    }
+
+    .facts div {
+      border-left: 3px solid var(--sky);
+      padding-left: 18px
+    }
+
+    .facts strong {
+      display: block;
+      font-size: 2.1rem;
+      line-height: 1.1;
+      color: var(--navy);
+      font-weight: 900
+    }
+
+    .facts span {
+      color: var(--muted);
+      font-size: .95rem
+    }
+
+    .dl {
+      background: linear-gradient(135deg, var(--navy), var(--deep));
+      color: #fff
+    }
+
+    .dl .wrap {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 32px;
+      flex-wrap: wrap
+    }
+
+    .dl h2 {
+      color: #fff
+    }
+
+    .dl .lead {
+      color: rgba(255, 255, 255, .8)
+    }
+
+    .soon {
+      display: inline-block;
+      background: var(--sky);
+      color: #fff;
+      font-size: .8rem;
+      font-weight: 700;
+      padding: 3px 12px;
+      border-radius: 999px;
+      vertical-align: middle;
+      margin-left: 10px;
+      animation: glow 2s infinite
+    }
+
+    @keyframes glow {
+      0% {
+        box-shadow: 0 0 0 0 rgba(0, 186, 242, .7)
+      }
+
+      100% {
+        box-shadow: 0 0 0 14px rgba(0, 186, 242, 0)
+      }
+    }
+
+    .stores {
+      display: flex;
+      gap: 14px
+    }
+
+    .store {
+      background: rgba(255, 255, 255, .12);
+      border: 1px solid rgba(255, 255, 255, .25);
+      border-radius: 12px;
+      padding: 10px 22px;
+      line-height: 1.3;
+      cursor: not-allowed;
+      transition: transform .3s var(--ease)
+    }
+
+    .store:hover {
+      transform: translateY(-4px)
+    }
+
+    .store small {
+      display: block;
+      font-size: .75rem;
+      opacity: .8
+    }
+
+    .store b {
+      font-size: 1.1rem
+    }
+
+    footer {
+      background: #00204f;
+      color: #c8d4ea;
+      padding: 56px 0 28px
+    }
+
+    .fgrid {
+      display: grid;
+      grid-template-columns: 2fr 1fr 1fr 1fr;
+      gap: 32px
+    }
+
+    footer .brand {
+      color: #fff
+    }
+
+    footer h4 {
+      color: #fff;
+      margin-bottom: 12px
+    }
+
+    footer li {
+      list-style: none;
+      margin-bottom: 8px
+    }
+
+    footer li a {
+      transition: color .2s, padding .3s
+    }
+
+    footer li a:hover {
+      color: var(--sky);
+      padding-left: 6px
+    }
+
+    .copy {
+      margin-top: 40px;
+      padding-top: 20px;
+      border-top: 1px solid rgba(255, 255, 255, .12);
+      font-size: .9rem
+    }
+
+    @media(max-width:900px) {
+      nav ul {
+        display: none
+      }
+
+      .hero .wrap,
+      .feat,
+      .calc,
+      .lite-grid {
+        grid-template-columns: 1fr
+      }
+
+      .hero .wrap {
+        min-height: 0
+      }
+
+      .how-grid {
+        grid-template-columns: 1fr
+      }
+
+      .sticky {
+        display: none
+      }
+
+      .stp {
+        min-height: 0;
+        opacity: 1;
+        padding: 18px 0 18px 24px
+      }
+
+      .facts,
+      .fgrid {
+        grid-template-columns: 1fr 1fr
+      }
+
+      .sent {
+        left: auto;
+        right: 0
+      }
+    }
+
+    @media(max-width:520px) {
+      .actions {
+        gap: 8px
+      }
+
+      .actions .btn {
+        padding: 8px 14px;
+        font-size: 0.9rem
+      }
+
+      .facts,
+      .fgrid {
+        grid-template-columns: 1fr
+      }
+
+      .stores {
+        flex-direction: column;
+        width: 100%
+      }
+    }
+
+    @media(prefers-reduced-motion:reduce) {
+
+      *,
+      *::before,
+      *::after {
+        animation: none !important;
+        transition: none !important
+      }
+
+      html {
+        scroll-behavior: auto
+      }
+
+      .w>span,
+      .fadeup,
+      .js .rv {
+        transform: none;
+        opacity: 1
+      }
+
+      .fld i {
+        width: var(--w)
+      }
+
+      .otp b,
+      .dots i.f {
+        opacity: 1
+      }
+
+      .bank {
+        transform: none
+      }
+
+      .ring circle,
+      .ring path {
+        stroke-dashoffset: 0
+      }
+    }
+  </style>
+  <script>document.documentElement.classList.add("js", "intro")</script>
 </head>
+
 <body>
-<div id="intro" aria-hidden="true"><div class="bgc"></div><div class="pulse"></div>
-  <div class="brand il"><span>PAY<b>MONEY</b></span></div></div>
-<div id="bar"></div>
-<header id="hd">
-  <div class="wrap nav">
-    <a class="brand" href="index.html" aria-label="PayMoney home"><span>PAY<b>MONEY</b></span></a>
-    <nav aria-label="Main"><ul>
-      <li><a href="#features">Features</a></li><li><a href="#lite">PayMoney Lite</a></li><li><a href="#download">Download</a></li><li><a href="#about">About Us</a></li>
-    </ul></nav>
-    <div class="actions"><a class="btn btn-line" href="login.html">Login</a><a class="btn btn-fill" href="register.html">Register</a></div>
+  <div id="intro" aria-hidden="true">
+    <div class="bgc"></div>
+    <div class="pulse"></div>
+    <div class="brand il"><span>PAY<b>MONEY</b></span></div>
   </div>
-</header>
-
-<main>
-<section class="hero" style="padding:0">
-  <span class="blob b1"></span><span class="blob b2"></span>
-  <div class="wrap">
-    <div>
-      <h1>Money moves the moment you do.</h1>
-      <p class="fadeup">Send money to a phone number or @paymoney ID, scan to pay, recharge your mobile and clear your bills, all from one wallet.</p>
-      <div class="cta fadeup" style="--d:.15s">
-        <a class="btn btn-fill btn-lg" href="register.html">Get started</a>
-        <a class="btn btn-line btn-lg" href="#features">Learn more</a>
-      </div>
-      <p class="note fadeup" style="--d:.3s">New accounts start with ₹20,000 in the wallet.</p>
-    </div>
-    <div class="stage" aria-hidden="true">
-      <div class="float"><div class="phone"><div class="screen">
-        <div class="top"><span>Hi, Ayush</span><span>@paymoney</span></div>
-        <div class="bal"><small>Wallet balance</small><strong id="bal">₹0.00</strong><span>ayush@paymoney</span></div>
-        <div class="quick"><div><i></i>Send</div><div><i></i>Recharge</div><div><i></i>Bills</div><div><i></i>Scan</div></div>
-        <div id="feed"></div>
-      </div></div></div>
-      <div class="sent" id="sent"><div class="tick">✓</div><div><b id="st1"></b><span id="st2"></span></div></div>
-    </div>
-  </div>
-</section>
-
-<div class="mq" aria-label="Supported operators"><div class="track" id="track"></div></div>
-
-<section id="features">
-  <div class="wrap">
-    <h2 class="rv">Everything you pay for, in one place</h2>
-    <p class="lead rv" style="--i:1">Move money between people, keep utilities on, and put savings to work.</p>
-    <div class="feat">
-      <div class="big rv">
-        <h3>Send money in seconds</h3>
-        <p>Pay anyone with a mobile number or @paymoney ID. Scan a QR code with your camera or upload one from your gallery. Every payment is confirmed with your 4-digit UPI PIN.</p>
-        <span class="chip">Phone number</span><span class="chip">@paymoney ID</span><span class="chip">QR scan</span><span class="chip">PNG receipts</span>
-      </div>
-      <div class="list">
-        <div class="row rv" style="--i:1"><div class="ico" style="background:#fff3e0;color:#e08a00">₹</div><div><h3>Mobile and DTH recharge</h3><p>Jio, Airtel, Vi and BSNL, plus Tata Play, Dish TV and more. Operators are detected from your number.</p></div></div>
-        <div class="row rv" style="--i:2"><div class="ico" style="background:#e5f7ee;color:var(--ok)">⚡</div><div><h3>Electricity and broadband bills</h3><p>Pick your state board or ISP, check the amount due and pay.</p></div></div>
-        <div class="row rv" style="--i:3"><div class="ico" style="background:var(--sky-soft);color:var(--sky)">%</div><div><h3>Fixed deposits up to 6.5% p.a.</h3><p>Start from ₹500 for 3 to 24 months, and break the deposit any time to get your principal back.</p></div></div>
-        <div class="row rv" style="--i:4"><div class="ico" style="background:#ecebfb;color:#6a6fd8">🔒</div><div><h3>Protected sign-in</h3><p>Password plus an email code at every login, and a PIN before any money leaves your wallet.</p></div></div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<section class="how">
-  <div class="wrap how-grid">
-    <div>
-      <h2 class="rv">Up and running in three steps</h2>
-      <div class="stp on" data-s="0"><h3>Create your account</h3><p>Enter your name, email and phone number, then confirm the code we email you.</p></div>
-      <div class="stp" data-s="1"><h3>Link a bank and set a PIN</h3><p>Add your bank account and choose your UPI ID and 4-digit PIN.</p></div>
-      <div class="stp" data-s="2"><h3>Pay, recharge, save</h3><p>Send money, clear bills and open a fixed deposit from your dashboard.</p></div>
-    </div>
-    <div class="sticky" aria-hidden="true"><div class="phone"><div class="screen">
-      <div class="scr on"><h4>Create account</h4>
-        <div class="fld"><i style="--w:70%;--k:0"></i></div><div class="fld"><i style="--w:85%;--k:1"></i></div><div class="fld"><i style="--w:55%;--k:2"></i></div>
-        <div class="otp"><b style="--k:0">4</b><b style="--k:1">8</b><b style="--k:2">1</b><b style="--k:3">9</b><b style="--k:4">2</b><b style="--k:5">6</b></div></div>
-      <div class="scr"><h4>Link bank, set PIN</h4>
-        <div class="bank"><i></i><div><b>HDFC Bank</b><br>XXXX1234</div></div>
-        <div class="dots"><i style="--k:0"></i><i style="--k:1"></i><i style="--k:2"></i><i style="--k:3"></i></div>
-        <p style="text-align:center;font-size:.85rem;color:var(--muted)">Choose a 4-digit UPI PIN</p></div>
-      <div class="scr"><div class="pay"><small style="color:var(--muted)">Paid to riya@paymoney</small><div class="amt">₹500</div>
-        <svg class="ring" viewBox="0 0 100 100"><circle cx="50" cy="50" r="44" pathLength="1"/><path d="M30 52l14 14 27-30" pathLength="1"/></svg>
-        <b style="color:var(--ok)">Payment successful</b></div></div>
-    </div></div></div>
-  </div>
-</section>
-
-<section>
-  <div class="wrap">
-    <h2 class="rv">See what your savings could earn</h2>
-    <div class="calc">
-      <div class="rv">
-        <div class="plans" id="plans"></div>
-        <div class="amt-l"><span>Deposit amount</span><b id="amtv"></b></div>
-        <input type="range" id="amt" min="500" max="100000" step="500" value="25000" aria-label="Deposit amount">
-      </div>
-      <div class="result rv" style="--i:1">
-        <small>You get at maturity</small><strong id="mat"></strong>
-        <div class="split"><i class="p" id="sp"></i><i class="g" id="sg"></i></div>
-        <div class="legend"><span>Your deposit</span><span id="int"></span></div>
-        <p style="font-size:.8rem;opacity:.7;margin-top:14px">Estimate with quarterly compounding. Actual payout may differ.</p>
-      </div>
-    </div>
-  </div>
-</section>
-
-<section class="lite" id="lite">
-  <div class="wrap lite-grid">
-    <div>
-      <h2 class="rv">PayMoney Lite: an account for your child, run by you</h2>
-      <p class="lead rv" style="--i:1">Open a Lite account for your child from your own PayMoney account, and see what they spend.</p>
-      <div class="row rv" style="--i:2"><div class="ico" style="background:var(--sky-soft);color:var(--sky)">+</div><div><h3>You open it</h3><p>Create your child's Lite account yourself. No separate sign-up for them.</p></div></div>
-      <div class="row rv" style="--i:3"><div class="ico" style="background:#ecebfb;color:#6a6fd8">⇄</div><div><h3>Linked to your account</h3><p>The Lite account stays directly connected to yours.</p></div></div>
-      <div class="row rv" style="--i:4"><div class="ico" style="background:#e5f7ee;color:var(--ok)">◉</div><div><h3>See what they spend</h3><p>Follow your child's spending from your own account.</p></div></div>
-      <a class="btn btn-fill btn-lg rv" style="--i:5" href="register.html">Open a Lite account</a>
-    </div>
-    <div class="lk lite-vis rv" style="--i:2" aria-hidden="true">
-      <div class="acc par"><div class="who"><div class="av">P</div><div><b>Parent account</b><small>you@paymoney</small></div><span class="pill">Owner</span></div></div>
-      <div class="link"><span>Linked</span></div>
-      <div class="acc">
-        <div class="who"><div class="av" style="background:#ffb84d">A</div><div><b>Aarav</b><small style="color:var(--muted)">PayMoney Lite</small></div></div>
-        <div class="spent"><span>Spent today</span><strong data-count="259" data-pre="₹">₹0</strong></div>
+  <div id="bar"></div>
+  <header id="hd">
+    <div class="wrap nav">
+      <a class="brand" href="index.html" aria-label="PayMoney home"><span>PAY<b>MONEY</b></span></a>
+      <nav aria-label="Main">
         <ul>
-          <li style="--k:0"><span>Canteen</span><em class="out" style="font-style:normal">−₹40</em></li>
-          <li style="--k:1"><span>Stationery</span><em class="out" style="font-style:normal">−₹120</em></li>
-          <li style="--k:2"><span>Game top-up</span><em class="out" style="font-style:normal">−₹99</em></li>
+          <li><a href="#features">Features</a></li>
+          <li><a href="#lite">PayMoney Lite</a></li>
+          <li><a href="#download">Download</a></li>
+          <li><a href="#about">About Us</a></li>
         </ul>
+      </nav>
+      <div class="actions"><a class="btn btn-line" href="login.html">Login</a><a class="btn btn-fill"
+          href="register.html">Register</a></div>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero" style="padding:0">
+      <span class="blob b1"></span><span class="blob b2"></span>
+      <div class="wrap">
+        <div>
+          <h1>Money moves the moment you do.</h1>
+          <p class="fadeup">Send money to a phone number or @paymoney ID, scan to pay, recharge your mobile and clear
+            your bills, all from one wallet.</p>
+          <div class="cta fadeup" style="--d:.15s">
+            <a class="btn btn-fill btn-lg" href="register.html">Get started</a>
+            <a class="btn btn-line btn-lg" href="#features">Learn more</a>
+          </div>
+          <p class="note fadeup" style="--d:.3s">New accounts start with ₹20,000 in the wallet.</p>
+        </div>
+        <div class="stage" aria-hidden="true">
+          <div class="float">
+            <div class="phone">
+              <div class="screen">
+                <div class="top"><span>Hi, Ayush</span><span>@paymoney</span></div>
+                <div class="bal"><small>Wallet balance</small><strong id="bal">₹0.00</strong><span>ayush@paymoney</span>
+                </div>
+                <div class="quick">
+                  <div><i></i>Send</div>
+                  <div><i></i>Recharge</div>
+                  <div><i></i>Bills</div>
+                  <div><i></i>Scan</div>
+                </div>
+                <div id="feed"></div>
+              </div>
+            </div>
+          </div>
+          <div class="sent" id="sent">
+            <div class="tick">✓</div>
+            <div><b id="st1"></b><span id="st2"></span></div>
+          </div>
+        </div>
       </div>
+    </section>
+
+    <div class="mq" aria-label="Supported operators">
+      <div class="track" id="track"></div>
     </div>
-  </div>
-</section>
 
-<section id="about" style="padding-top:0">
-  <div class="wrap">
-    <h2 class="rv">About PayMoney</h2>
-    <p class="lead rv" style="--i:1">PayMoney is built to make everyday digital payments simple for everyone in India: one wallet, one UPI ID, and no fees on transfers between users.</p>
-    <div class="facts">
-      <div class="rv"><strong data-count="20000" data-pre="₹">0</strong><span>Welcome balance</span></div>
-      <div class="rv" style="--i:1"><strong data-count="4">0</strong><span>Bill and recharge types</span></div>
-      <div class="rv" style="--i:2"><strong data-count="6.5" data-dec="1" data-suf="%">0</strong><span>Top fixed deposit rate</span></div>
-      <div class="rv" style="--i:3"><strong data-count="8" data-suf="-digit">0</strong><span>Email code at every login</span></div>
+    <section id="features">
+      <div class="wrap">
+        <h2 class="rv">Everything you pay for, in one place</h2>
+        <p class="lead rv" style="--i:1">Move money between people, keep utilities on, and put savings to work.</p>
+        <div class="feat">
+          <div class="big rv">
+            <h3>Send money in seconds</h3>
+            <p>Pay anyone with a mobile number or @paymoney ID. Scan a QR code with your camera or upload one from your
+              gallery. Every payment is confirmed with your 4-digit UPI PIN.</p>
+            <span class="chip">Phone number</span><span class="chip">@paymoney ID</span><span class="chip">QR
+              scan</span><span class="chip">PNG receipts</span>
+          </div>
+          <div class="list">
+            <div class="row rv" style="--i:1">
+              <div class="ico" style="background:#fff3e0;color:#e08a00">₹</div>
+              <div>
+                <h3>Mobile and DTH recharge</h3>
+                <p>Jio, Airtel, Vi and BSNL, plus Tata Play, Dish TV and more. Operators are detected from your number.
+                </p>
+              </div>
+            </div>
+            <div class="row rv" style="--i:2">
+              <div class="ico" style="background:#e5f7ee;color:var(--ok)">⚡</div>
+              <div>
+                <h3>Electricity and broadband bills</h3>
+                <p>Pick your state board or ISP, check the amount due and pay.</p>
+              </div>
+            </div>
+            <div class="row rv" style="--i:3">
+              <div class="ico" style="background:var(--sky-soft);color:var(--sky)">%</div>
+              <div>
+                <h3>Fixed deposits up to 6.5% p.a.</h3>
+                <p>Start from ₹500 for 3 to 24 months, and break the deposit any time to get your principal back.</p>
+              </div>
+            </div>
+            <div class="row rv" style="--i:4">
+              <div class="ico" style="background:#ecebfb;color:#6a6fd8">🔒</div>
+              <div>
+                <h3>Protected sign-in</h3>
+                <p>Password plus an email code at every login, and a PIN before any money leaves your wallet.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="how">
+      <div class="wrap how-grid">
+        <div>
+          <h2 class="rv">Up and running in three steps</h2>
+          <div class="stp on" data-s="0">
+            <h3>Create your account</h3>
+            <p>Enter your name, email and phone number, then confirm the code we email you.</p>
+          </div>
+          <div class="stp" data-s="1">
+            <h3>Link a bank and set a PIN</h3>
+            <p>Add your bank account and choose your UPI ID and 4-digit PIN.</p>
+          </div>
+          <div class="stp" data-s="2">
+            <h3>Pay, recharge, save</h3>
+            <p>Send money, clear bills and open a fixed deposit from your dashboard.</p>
+          </div>
+        </div>
+        <div class="sticky" aria-hidden="true">
+          <div class="phone">
+            <div class="screen">
+              <div class="scr on">
+                <h4>Create account</h4>
+                <div class="fld"><i style="--w:70%;--k:0"></i></div>
+                <div class="fld"><i style="--w:85%;--k:1"></i></div>
+                <div class="fld"><i style="--w:55%;--k:2"></i></div>
+                <div class="otp"><b style="--k:0">4</b><b style="--k:1">8</b><b style="--k:2">1</b><b
+                    style="--k:3">9</b><b style="--k:4">2</b><b style="--k:5">6</b></div>
+              </div>
+              <div class="scr">
+                <h4>Link bank, set PIN</h4>
+                <div class="bank"><i></i>
+                  <div><b>HDFC Bank</b><br>XXXX1234</div>
+                </div>
+                <div class="dots"><i style="--k:0"></i><i style="--k:1"></i><i style="--k:2"></i><i style="--k:3"></i>
+                </div>
+                <p style="text-align:center;font-size:.85rem;color:var(--muted)">Choose a 4-digit UPI PIN</p>
+              </div>
+              <div class="scr">
+                <div class="pay"><small style="color:var(--muted)">Paid to riya@paymoney</small>
+                  <div class="amt">₹500</div>
+                  <svg class="ring" viewBox="0 0 100 100">
+                    <circle cx="50" cy="50" r="44" pathLength="1" />
+                    <path d="M30 52l14 14 27-30" pathLength="1" />
+                  </svg>
+                  <b style="color:var(--ok)">Payment successful</b>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <div class="wrap">
+        <h2 class="rv">See what your savings could earn</h2>
+        <div class="calc">
+          <div class="rv">
+            <div class="plans" id="plans"></div>
+            <div class="amt-l"><span>Deposit amount</span><b id="amtv"></b></div>
+            <input type="range" id="amt" min="500" max="100000" step="500" value="25000" aria-label="Deposit amount">
+          </div>
+          <div class="result rv" style="--i:1">
+            <small>You get at maturity</small><strong id="mat"></strong>
+            <div class="split"><i class="p" id="sp"></i><i class="g" id="sg"></i></div>
+            <div class="legend"><span>Your deposit</span><span id="int"></span></div>
+            <p style="font-size:.8rem;opacity:.7;margin-top:14px">Estimate with quarterly compounding. Actual payout may
+              differ.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="lite" id="lite">
+      <div class="wrap lite-grid">
+        <div>
+          <h2 class="rv">PayMoney Lite: an account for your child, run by you</h2>
+          <p class="lead rv" style="--i:1">Open a Lite account for your child from your own PayMoney account, and see
+            what they spend.</p>
+          <div class="row rv" style="--i:2">
+            <div class="ico" style="background:var(--sky-soft);color:var(--sky)">+</div>
+            <div>
+              <h3>You open it</h3>
+              <p>Create your child's Lite account yourself. No separate sign-up for them.</p>
+            </div>
+          </div>
+          <div class="row rv" style="--i:3">
+            <div class="ico" style="background:#ecebfb;color:#6a6fd8">⇄</div>
+            <div>
+              <h3>Linked to your account</h3>
+              <p>The Lite account stays directly connected to yours.</p>
+            </div>
+          </div>
+          <div class="row rv" style="--i:4">
+            <div class="ico" style="background:#e5f7ee;color:var(--ok)">◉</div>
+            <div>
+              <h3>See what they spend</h3>
+              <p>Follow your child's spending from your own account.</p>
+            </div>
+          </div>
+          <a class="btn btn-fill btn-lg rv" style="--i:5" href="register.html">Open a Lite account</a>
+        </div>
+        <div class="lk lite-vis rv" style="--i:2" aria-hidden="true">
+          <div class="acc par">
+            <div class="who">
+              <div class="av">P</div>
+              <div><b>Parent account</b><small>you@paymoney</small></div><span class="pill">Owner</span>
+            </div>
+          </div>
+          <div class="link"><span>Linked</span></div>
+          <div class="acc">
+            <div class="who">
+              <div class="av" style="background:#ffb84d">A</div>
+              <div><b>Aarav</b><small style="color:var(--muted)">PayMoney Lite</small></div>
+            </div>
+            <div class="spent"><span>Spent today</span><strong data-count="259" data-pre="₹">₹0</strong></div>
+            <ul>
+              <li style="--k:0"><span>Canteen</span><em class="out" style="font-style:normal">−₹40</em></li>
+              <li style="--k:1"><span>Stationery</span><em class="out" style="font-style:normal">−₹120</em></li>
+              <li style="--k:2"><span>Game top-up</span><em class="out" style="font-style:normal">−₹99</em></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="about" style="padding-top:0">
+      <div class="wrap">
+        <h2 class="rv">About PayMoney</h2>
+        <p class="lead rv" style="--i:1">PayMoney is built to make everyday digital payments simple for everyone in
+          India: one wallet, one UPI ID, and no fees on transfers between users.</p>
+        <div class="facts">
+          <div class="rv"><strong data-count="20000" data-pre="₹">0</strong><span>Welcome balance</span></div>
+          <div class="rv" style="--i:1"><strong data-count="4">0</strong><span>Bill and recharge types</span></div>
+          <div class="rv" style="--i:2"><strong data-count="6.5" data-dec="1" data-suf="%">0</strong><span>Top fixed
+              deposit rate</span></div>
+          <div class="rv" style="--i:3"><strong data-count="8" data-suf="-digit">0</strong><span>Email OTP Verification
+              for Registration</span></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="dl" id="download">
+      <div class="wrap">
+        <div class="rv">
+          <h2>Get the PayMoney app<span class="soon">Coming soon</span></h2>
+          <p class="lead">The mobile app is on its way. Until then, PayMoney works in any phone browser.</p>
+        </div>
+        <div class="stores rv" style="--i:1" aria-label="App stores, coming soon">
+          <div class="store"><small>Get it on</small><b>Google Play</b></div>
+          <div class="store"><small>Download on the</small><b>App Store</b></div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="wrap">
+      <div class="fgrid">
+        <div><a class="brand" href="index.html"><span>PAY<b>MONEY</b></span></a>
+          <p style="margin-top:12px">Making payments simple.</p>
+        </div>
+        <div>
+          <h4>Company</h4>
+          <ul>
+            <li><a href="#about">About Us</a></li>
+            <li><a href="#">Careers</a></li>
+            <li><a href="#">Blog</a></li>
+          </ul>
+        </div>
+        <div>
+          <h4>Products</h4>
+          <ul>
+            <li><a href="upi.html">Payments</a></li>
+            <li><a href="recharge.html">Recharge</a></li>
+            <li><a href="fd.html">Investments</a></li>
+          </ul>
+        </div>
+        <div>
+          <h4>Help and support</h4>
+          <ul>
+            <li><a href="support.html">FAQs</a></li>
+            <li><a href="support.html">Contact us</a></li>
+            <li><a href="#">Privacy policy</a></li>
+          </ul>
+        </div>
+      </div>
+      <p class="copy">© 2026 PayMoney. All rights reserved.</p>
     </div>
-  </div>
-</section>
+  </footer>
 
-<section class="dl" id="download">
-  <div class="wrap">
-    <div class="rv"><h2>Get the PayMoney app<span class="soon">Coming soon</span></h2>
-    <p class="lead">The mobile app is on its way. Until then, PayMoney works in any phone browser.</p></div>
-    <div class="stores rv" style="--i:1" aria-label="App stores, coming soon">
-      <div class="store"><small>Get it on</small><b>Google Play</b></div><div class="store"><small>Download on the</small><b>App Store</b></div>
-    </div>
-  </div>
-</section>
-</main>
+  <script>
+    document.documentElement.classList.add('js');
+    const RM = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const $ = (s, r = document) => r.querySelector(s), $$ = (s, r = document) => [...r.querySelectorAll(s)];
+    const inr = n => '₹' + n.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    const inr0 = n => '₹' + Math.round(n).toLocaleString('en-IN');
+    function tween(el, to, fmt, from = 0, dur = 1300) {
+      if (RM) { el.textContent = fmt(to); return }
+      const t0 = performance.now(); (function f(t) {
+        const p = Math.min((t - t0) / dur, 1), e = 1 - Math.pow(1 - p, 3);
+        el.textContent = fmt(from + (to - from) * e); if (p < 1) requestAnimationFrame(f)
+      })(t0);
+    }
 
-<footer>
-  <div class="wrap">
-    <div class="fgrid">
-      <div><a class="brand" href="index.html"><span>PAY<b>MONEY</b></span></a><p style="margin-top:12px">Making payments simple.</p></div>
-      <div><h4>Company</h4><ul><li><a href="#about">About Us</a></li><li><a href="#">Careers</a></li><li><a href="#">Blog</a></li></ul></div>
-      <div><h4>Products</h4><ul><li><a href="upi.html">Payments</a></li><li><a href="recharge.html">Recharge</a></li><li><a href="fd.html">Investments</a></li></ul></div>
-      <div><h4>Help and support</h4><ul><li><a href="support.html">FAQs</a></li><li><a href="support.html">Contact us</a></li><li><a href="#">Privacy policy</a></li></ul></div>
-    </div>
-    <p class="copy">© 2026 PayMoney. All rights reserved.</p>
-  </div>
-</footer>
+    /* scroll progress + header shadow */
+    const bar = $('#bar'), hd = $('#hd');
+    addEventListener('scroll', () => {
+      bar.style.transform = `scaleX(${scrollY / Math.max(1, document.body.scrollHeight - innerHeight)})`;
+      hd.classList.toggle('scrolled', scrollY > 10);
+    }, { passive: true });
 
-<script>
-document.documentElement.classList.add('js');
-const RM=matchMedia('(prefers-reduced-motion: reduce)').matches;
-const $=(s,r=document)=>r.querySelector(s),$$=(s,r=document)=>[...r.querySelectorAll(s)];
-const inr=n=>'₹'+n.toLocaleString('en-IN',{minimumFractionDigits:2,maximumFractionDigits:2});
-const inr0=n=>'₹'+Math.round(n).toLocaleString('en-IN');
-function tween(el,to,fmt,from=0,dur=1300){
-  if(RM){el.textContent=fmt(to);return}
-  const t0=performance.now();(function f(t){const p=Math.min((t-t0)/dur,1),e=1-Math.pow(1-p,3);
-  el.textContent=fmt(from+(to-from)*e);if(p<1)requestAnimationFrame(f)})(t0);
-}
+    /* headline word reveal */
+    const h = $('.hero h1');
+    h.innerHTML = h.textContent.split(' ').map((w, i) => `<span class="w"><span style="--i:${i}">${w}</span></span>`).join(' ');
 
-/* scroll progress + header shadow */
-const bar=$('#bar'),hd=$('#hd');
-addEventListener('scroll',()=>{
-  bar.style.transform=`scaleX(${scrollY/Math.max(1,document.body.scrollHeight-innerHeight)})`;
-  hd.classList.toggle('scrolled',scrollY>10);
-},{passive:true});
+    /* marquee */
+    const ops = ['Jio', 'Airtel', 'Vi', 'BSNL', 'Tata Play', 'Dish TV', 'Airtel Digital TV', 'Sun Direct', 'JioFiber', 'ACT Fibernet', 'Hathway', 'Electricity boards'];
+    $('#track').innerHTML = [...ops, ...ops].map(o => `<span>${o}</span>`).join('');
 
-/* headline word reveal */
-const h=$('.hero h1');
-h.innerHTML=h.textContent.split(' ').map((w,i)=>`<span class="w"><span style="--i:${i}">${w}</span></span>`).join(' ');
+    /* hero: live wallet */
+    let bal = 18450; const balEl = $('#bal'), feed = $('#feed'), sent = $('#sent');
+    function startHero() {
+      tween(balEl, bal, inr, 0, 1600);
+      if (!RM) setTimeout(() => { add(); setInterval(() => visible && add(), 3400) }, 1800);
+    }
+    const evs = [['Riya Sharma', -500, '₹500 sent', 'to riya@paymoney'], ['Jio recharge', -299, 'Recharge done', '₹299 plan, 28 days'], ['Cashback', 50, '₹50 cashback', 'added to wallet'], ['Electricity bill', -1240, 'Bill paid', '₹1,240 to state board'], ['Wallet top-up', 2000, '₹2,000 added', 'from linked bank']];
+    let k = 0, visible = true;
+    function add() {
+      const [n, a, t1, t2] = evs[k++ % evs.length];
+      const d = document.createElement('div'); d.className = 'tx';
+      d.innerHTML = `<span>${n}</span><em class="${a < 0 ? 'out' : 'in'}">${a < 0 ? '−' : '+'}₹${Math.abs(a).toLocaleString('en-IN')}</em>`;
+      feed.prepend(d); while (feed.children.length > 3) feed.lastChild.remove();
+      const from = bal; bal += a; tween(balEl, bal, inr, from, 700);
+      $('#st1').textContent = t1; $('#st2').textContent = t2;
+      sent.classList.remove('show'); void sent.offsetWidth; sent.classList.add('show');
+    }
+    if (!RM) {
+      new IntersectionObserver(e => visible = e[0].isIntersecting).observe($('.stage'));
+    } else { evs.slice(0, 3).forEach(() => add()); sent.style.display = 'none' }
 
-/* marquee */
-const ops=['Jio','Airtel','Vi','BSNL','Tata Play','Dish TV','Airtel Digital TV','Sun Direct','JioFiber','ACT Fibernet','Hathway','Electricity boards'];
-$('#track').innerHTML=[...ops,...ops].map(o=>`<span>${o}</span>`).join('');
+    /* phone tilt */
+    const stage = $('.stage'), ph = $('.stage .phone');
+    if (!RM && matchMedia('(hover:hover)').matches) {
+      stage.addEventListener('mousemove', e => { const r = stage.getBoundingClientRect(), x = (e.clientX - r.left) / r.width - .5, y = (e.clientY - r.top) / r.height - .5; ph.style.transform = `rotateY(${x * 16}deg) rotateX(${-y * 12}deg)` });
+      stage.addEventListener('mouseleave', () => ph.style.transform = '');
+    }
 
-/* hero: live wallet */
-let bal=18450;const balEl=$('#bal'),feed=$('#feed'),sent=$('#sent');
-function startHero(){
-  tween(balEl,bal,inr,0,1600);
-  if(!RM)setTimeout(()=>{add();setInterval(()=>visible&&add(),3400)},1800);
-}
-const evs=[['Riya Sharma',-500,'₹500 sent','to riya@paymoney'],['Jio recharge',-299,'Recharge done','₹299 plan, 28 days'],['Cashback',50,'₹50 cashback','added to wallet'],['Electricity bill',-1240,'Bill paid','₹1,240 to state board'],['Wallet top-up',2000,'₹2,000 added','from linked bank']];
-let k=0,visible=true;
-function add(){
-  const [n,a,t1,t2]=evs[k++%evs.length];
-  const d=document.createElement('div');d.className='tx';
-  d.innerHTML=`<span>${n}</span><em class="${a<0?'out':'in'}">${a<0?'−':'+'}₹${Math.abs(a).toLocaleString('en-IN')}</em>`;
-  feed.prepend(d);while(feed.children.length>3)feed.lastChild.remove();
-  const from=bal;bal+=a;tween(balEl,bal,inr,from,700);
-  $('#st1').textContent=t1;$('#st2').textContent=t2;
-  sent.classList.remove('show');void sent.offsetWidth;sent.classList.add('show');
-}
-if(!RM){
-  new IntersectionObserver(e=>visible=e[0].isIntersecting).observe($('.stage'));
-}else{evs.slice(0,3).forEach(()=>add());sent.style.display='none'}
+    /* reveals + counters */
+    const io = new IntersectionObserver(es => es.forEach(e => {
+      if (!e.isIntersecting) return; io.unobserve(e.target); e.target.classList.add('in');
+      const c = e.target.querySelector('[data-count]');
+      if (c) {
+        const d = +c.dataset.dec || 0, p = c.dataset.pre || '', s = c.dataset.suf || '';
+        tween(c, +c.dataset.count, v => p + v.toLocaleString('en-IN', { minimumFractionDigits: d, maximumFractionDigits: d }) + s, 0, 1600)
+      }
+    }), { threshold: .2 });
+    $$('.rv').forEach(el => io.observe(el));
 
-/* phone tilt */
-const stage=$('.stage'),ph=$('.stage .phone');
-if(!RM&&matchMedia('(hover:hover)').matches){
-  stage.addEventListener('mousemove',e=>{const r=stage.getBoundingClientRect(),x=(e.clientX-r.left)/r.width-.5,y=(e.clientY-r.top)/r.height-.5;ph.style.transform=`rotateY(${x*16}deg) rotateX(${-y*12}deg)`});
-  stage.addEventListener('mouseleave',()=>ph.style.transform='');
-}
+    /* sticky steps */
+    const stps = $$('.stp'), scrs = $$('.scr');
+    const so = new IntersectionObserver(es => es.forEach(e => {
+      if (!e.isIntersecting) return; const i = +e.target.dataset.s;
+      stps.forEach((s, j) => s.classList.toggle('on', j === i));
+      scrs.forEach((s, j) => s.classList.toggle('on', j === i));
+    }), { rootMargin: '-45% 0px -45% 0px' });
+    stps.forEach(s => so.observe(s));
 
-/* reveals + counters */
-const io=new IntersectionObserver(es=>es.forEach(e=>{
-  if(!e.isIntersecting)return;io.unobserve(e.target);e.target.classList.add('in');
-  const c=e.target.querySelector('[data-count]');
-  if(c){const d=+c.dataset.dec||0,p=c.dataset.pre||'',s=c.dataset.suf||'';
-    tween(c,+c.dataset.count,v=>p+v.toLocaleString('en-IN',{minimumFractionDigits:d,maximumFractionDigits:d})+s,0,1600)}
-}),{threshold:.2});
-$$('.rv').forEach(el=>io.observe(el));
+    /* FD calculator */
+    const plans = [[3, 5], [6, 5.5], [12, 6], [24, 6.5]]; let pi = 2;
+    const pl = $('#plans'), amt = $('#amt');
+    pl.innerHTML = plans.map((p, i) => `<button type="button" data-i="${i}">${p[0]} months · ${p[1]}%</button>`).join('');
+    let last = 0;
+    function calc() {
+      const P = +amt.value, [m, r] = plans[pi], A = P * Math.pow(1 + r / 400, 4 * m / 12), g = A - P;
+      $$('button', pl).forEach((b, i) => b.classList.toggle('on', i === pi));
+      $('#amtv').textContent = inr0(P);
+      tween($('#mat'), A, inr0, last, 500); last = A;
+      $('#sp').style.width = (P / A * 100) + '%'; $('#sg').style.width = (g / A * 100) + '%';
+      $('#int').textContent = 'Interest ' + inr0(g);
+    }
+    pl.addEventListener('click', e => { const b = e.target.closest('button'); if (b) { pi = +b.dataset.i; calc() } });
+    amt.addEventListener('input', calc); calc();
 
-/* sticky steps */
-const stps=$$('.stp'),scrs=$$('.scr');
-const so=new IntersectionObserver(es=>es.forEach(e=>{
-  if(!e.isIntersecting)return;const i=+e.target.dataset.s;
-  stps.forEach((s,j)=>s.classList.toggle('on',j===i));
-  scrs.forEach((s,j)=>s.classList.toggle('on',j===i));
-}),{rootMargin:'-45% 0px -45% 0px'});
-stps.forEach(s=>so.observe(s));
-
-/* FD calculator */
-const plans=[[3,5],[6,5.5],[12,6],[24,6.5]];let pi=2;
-const pl=$('#plans'),amt=$('#amt');
-pl.innerHTML=plans.map((p,i)=>`<button type="button" data-i="${i}">${p[0]} months · ${p[1]}%</button>`).join('');
-let last=0;
-function calc(){
-  const P=+amt.value,[m,r]=plans[pi],A=P*Math.pow(1+r/400,4*m/12),g=A-P;
-  $$('button',pl).forEach((b,i)=>b.classList.toggle('on',i===pi));
-  $('#amtv').textContent=inr0(P);
-  tween($('#mat'),A,inr0,last,500);last=A;
-  $('#sp').style.width=(P/A*100)+'%';$('#sg').style.width=(g/A*100)+'%';
-  $('#int').textContent='Interest '+inr0(g);
-}
-pl.addEventListener('click',e=>{const b=e.target.closest('button');if(b){pi=+b.dataset.i;calc()}});
-amt.addEventListener('input',calc);calc();
-
-/* intro: centre pop, then fly to the header */
-(function(){
-  const root=document.documentElement,ov=$('#intro');let over=false;
-  const done=()=>{if(over)return;over=true;ov.remove();root.classList.remove('intro');root.classList.add('ready');startHero()};
-  if(RM||!ov.animate){done();return}
-  try{
-    history.scrollRestoration='manual';scrollTo(0,0);
-    const il=$('.il',ov),bgc=$('.bgc',ov),tgt=$('.nav .brand');
-    const w=il.offsetWidth,h=il.offsetHeight,vw=innerWidth,vh=innerHeight;
-    const S=Math.min(2.4,vw*.8/w);
-    const at=s=>`translate(${vw/2-w*s/2}px,${vh/2-h*s/2}px) scale(${s})`;
-    il.animate([
-      {transform:at(S*.3),opacity:0},
-      {transform:at(S*1.14),opacity:1,offset:.6},
-      {transform:at(S),opacity:1}
-    ],{duration:850,easing:'cubic-bezier(.2,.8,.2,1)',fill:'forwards'}).finished.then(()=>new Promise(r=>setTimeout(r,500))).then(()=>{
-      const r=tgt.getBoundingClientRect();
-      bgc.animate([{opacity:1},{opacity:0}],{duration:750,delay:200,fill:'forwards'});
-      root.classList.add('flying');
-      return il.animate([
-        {transform:at(S),color:'#fff'},
-        {transform:`translate(${r.left}px,${r.top}px) scale(1)`,color:'#002b6e'}
-      ],{duration:950,easing:'cubic-bezier(.7,0,.2,1)',fill:'forwards'}).finished;
-    }).then(done).catch(done);
-  }catch(e){done()}
-  setTimeout(done,7000);
-})();
-</script>
+    /* intro: centre pop, then fly to the header */
+    (function () {
+      const root = document.documentElement, ov = $('#intro'); let over = false;
+      const done = () => { if (over) return; over = true; ov.remove(); root.classList.remove('intro'); root.classList.add('ready'); startHero() };
+      if (RM || !ov.animate) { done(); return }
+      try {
+        history.scrollRestoration = 'manual'; scrollTo(0, 0);
+        const il = $('.il', ov), bgc = $('.bgc', ov), tgt = $('.nav .brand');
+        const w = il.offsetWidth, h = il.offsetHeight, vw = innerWidth, vh = innerHeight;
+        const S = Math.min(2.4, vw * .8 / w);
+        const at = s => `translate(${vw / 2 - w * s / 2}px,${vh / 2 - h * s / 2}px) scale(${s})`;
+        il.animate([
+          { transform: at(S * .3), opacity: 0 },
+          { transform: at(S * 1.14), opacity: 1, offset: .6 },
+          { transform: at(S), opacity: 1 }
+        ], { duration: 850, easing: 'cubic-bezier(.2,.8,.2,1)', fill: 'forwards' }).finished.then(() => new Promise(r => setTimeout(r, 500))).then(() => {
+          const r = tgt.getBoundingClientRect();
+          bgc.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 750, delay: 200, fill: 'forwards' });
+          root.classList.add('flying');
+          return il.animate([
+            { transform: at(S), color: '#fff' },
+            { transform: `translate(${r.left}px,${r.top}px) scale(1)`, color: '#002b6e' }
+          ], { duration: 950, easing: 'cubic-bezier(.7,0,.2,1)', fill: 'forwards' }).finished;
+        }).then(done).catch(done);
+      } catch (e) { done() }
+      setTimeout(done, 7000);
+    })();
+  </script>
 </body>
+
 </html>
