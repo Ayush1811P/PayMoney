@@ -10,8 +10,8 @@
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap">
   <style>
     .lite-account-card {
-      background: #ffffff;
-      border: 1px solid #e2e8f0;
+      background: var(--bg-white);
+      border: 1px solid var(--border-color);
       border-radius: var(--border-radius-lg);
       padding: var(--spacing-lg);
       margin-bottom: var(--spacing-lg);
@@ -23,7 +23,7 @@
       align-items: center;
       margin-bottom: var(--spacing-md);
       padding-bottom: var(--spacing-sm);
-      border-bottom: 1px solid #e2e8f0;
+      border-bottom: 1px solid var(--border-color);
     }
     .lite-account-header h3 {
       margin: 0;
@@ -37,7 +37,7 @@
       color: var(--primary-color);
     }
     .lite-transactions-container {
-      background-color: #f8fafc;
+      background-color: var(--bg-light);
       border-radius: var(--border-radius-md);
       padding: var(--spacing-md);
       max-height: 400px;
@@ -48,7 +48,7 @@
       justify-content: space-between;
       align-items: center;
       padding: 12px 0;
-      border-bottom: 1px solid #e2e8f0;
+      border-bottom: 1px solid var(--border-color);
     }
     .lite-txn-item:last-child {
       border-bottom: none;
@@ -58,20 +58,20 @@
     }
     .txn-details p.title {
       font-weight: 600;
-      color: #334155;
+      color: var(--text-dark);
     }
     .txn-details p.date {
       font-size: 0.8rem;
-      color: #64748b;
+      color: var(--text-light);
     }
     .txn-amount {
       font-weight: 700;
     }
     .txn-amount.debit {
-      color: #ef4444;
+      color: var(--error-color);
     }
     .txn-amount.credit {
-      color: #22c55e;
+      color: var(--success-color);
     }
   </style>
 </head>
@@ -100,7 +100,7 @@
 
     <div id="liteAccountsList">
       <!-- Loading state -->
-      <p style="text-align: center; color: #64748b; margin: 40px 0;">Loading linked accounts...</p>
+      <p style="text-align: center; color: var(--text-light); margin: 40px 0;">Loading linked accounts...</p>
     </div>
   </main>
   
