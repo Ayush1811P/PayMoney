@@ -8,6 +8,11 @@ let currentWalletBalance = 0;
 document.addEventListener('DOMContentLoaded', async function() {
   // Require normal authentication (redirects lite users to lite-dashboard.html)
   if (!(await requireAuth('normal'))) return;
+
+  const scanQrBtn = document.getElementById('scanQrBtn');
+  if (scanQrBtn) {
+    scanQrBtn.addEventListener('click', handleScanQr);
+  }
   
   // Load wallet data and transactions in parallel
   await Promise.all([

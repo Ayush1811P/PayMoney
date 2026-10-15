@@ -9,6 +9,11 @@ let currentWalletBalance = 0;
 document.addEventListener('DOMContentLoaded', async function() {
   // 1. Require Lite authentication (redirects normal users to dashboard.html)
   if (!(await requireAuth('lite'))) return;
+
+  const scanQrBtn = document.getElementById('scanQrBtn');
+  if (scanQrBtn) {
+    scanQrBtn.addEventListener('click', handleScanQr);
+  }
   
   // 2. Load Lite account profile & parent details
   await loadLiteAccountDetails();

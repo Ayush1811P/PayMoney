@@ -89,6 +89,26 @@ body {
   justify-content: center;
 }
 
+.scan-qr-btn {
+  gap: var(--spacing-sm);
+  min-width: 180px;
+  background: var(--secondary-color);
+  color: var(--text-white);
+  font-weight: 700;
+}
+
+.scan-qr-btn:hover {
+  background: var(--secondary-dark);
+  color: var(--text-white);
+  box-shadow: var(--shadow-md);
+}
+
+.scan-qr-btn svg {
+  width: 22px;
+  height: 22px;
+  fill: currentColor;
+}
+
 /* Quick Actions */
 .quick-actions {
   margin-bottom: var(--spacing-xl);

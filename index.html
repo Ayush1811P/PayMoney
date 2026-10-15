@@ -4,6 +4,15 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>PayMoney – Send money, pay bills, recharge</title>
+<script>
+  const signedInUserId = localStorage.getItem('paymoney_user_id');
+  if (signedInUserId) {
+    const homePage = localStorage.getItem('paymoney_account_type') === 'lite'
+      ? 'lite-dashboard.html'
+      : 'dashboard.html';
+    window.location.replace(homePage);
+  }
+</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700;900&display=swap" rel="stylesheet">
 <style>

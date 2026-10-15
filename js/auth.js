@@ -9,6 +9,10 @@ let currentLoginData = null;
 
 let otpTimerInterval = null;
 
+function redirectToAccountHome(accountType) {
+  window.location.replace(accountType === 'lite' ? 'lite-dashboard.html' : 'dashboard.html');
+}
+
 function startOtpTimer(btnId, displayId) {
   const btn = document.getElementById(btnId);
   const display = document.getElementById(displayId);
@@ -342,10 +346,8 @@ document.addEventListener('DOMContentLoaded', async function() {
           
           if (result.profileId) {
             localStorage.setItem('paymoney_user_id', result.profileId);
-            showNotification('Registration successful! Redirecting...');
-            setTimeout(() => {
-              window.location.href = 'dashboard.html';
-            }, 1500);
+            localStorage.setItem('paymoney_account_type', 'normal');
+            redirectToAccountHome('normal');
           } else {
             throw new Error('Failed to retrieve profile ID');
           }
@@ -466,10 +468,7 @@ document.addEventListener('DOMContentLoaded', async function() {
       // OTP matched, complete login
       localStorage.setItem('paymoney_user_id', currentLoginData.id);
       localStorage.setItem('paymoney_account_type', 'normal');
-      showNotification('Login successful! Redirecting...');
-      setTimeout(() => {
-        window.location.href = 'dashboard.html';
-      }, 1500);
+      redirectToAccountHome('normal');
     });
     
     const resendBtnLogin = document.getElementById('resendOtpBtnLogin');
@@ -538,20 +537,14 @@ async function handleLogin(e) {
     // If user has no email registered (legacy user), just log them in
     localStorage.setItem('paymoney_user_id', data.id);
     localStorage.setItem('paymoney_account_type', 'normal');
-    showNotification('Login successful! Redirecting...');
-    setTimeout(() => {
-      window.location.href = 'dashboard.html';
-    }, 1500);
+    redirectToAccountHome('normal');
     return;
   }
   
   // Complete Login
   localStorage.setItem('paymoney_user_id', data.id);
   localStorage.setItem('paymoney_account_type', 'normal');
-  showNotification('Login successful! Redirecting...');
-  setTimeout(() => {
-    window.location.href = 'dashboard.html';
-  }, 1500);
+  redirectToAccountHome('normal');
 }
 
 // Handle Lite login form submission
@@ -607,10 +600,7 @@ async function handleLiteLogin(e) {
     localStorage.setItem('paymoney_user_id', data.id);
     localStorage.setItem('paymoney_account_type', 'lite');
     
-    showNotification('Lite Login successful! Redirecting to Lite Dashboard...');
-    setTimeout(() => {
-      window.location.href = 'lite-dashboard.html';
-    }, 1200);
+    redirectToAccountHome('lite');
   } catch (err) {
     console.error('Error during Lite login:', err);
     showNotification('An unexpected error occurred. Please try again.', 'error');
