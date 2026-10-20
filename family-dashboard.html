@@ -73,6 +73,23 @@
     .txn-amount.credit {
       color: var(--success-color);
     }
+    @media (max-width: 520px) {
+      .main-header .user-menu {
+        gap: 8px;
+        margin-right: 0;
+      }
+      .family-dashboard-back {
+        margin-right: 0 !important;
+        padding: 6px 8px;
+        font-size: var(--font-size-xs);
+        white-space: nowrap;
+      }
+    }
+    @media (max-width: 360px) {
+      .family-dashboard-back-context {
+        display: none;
+      }
+    }
   </style>
 </head>
 <body>
@@ -87,7 +104,7 @@
       </div>
       
       <div class="user-menu">
-        <a href="dashboard.html" class="btn btn-outline" style="margin-right: 15px;">Back to Dashboard</a>
+        <a href="dashboard.html" class="btn btn-outline family-dashboard-back" aria-label="Back to Dashboard" style="margin-right: 15px;"><span>Back</span><span class="family-dashboard-back-context"> to Dashboard</span></a>
         <button id="logoutBtn" class="btn btn-outline">Logout</button>
       </div>
     </div>

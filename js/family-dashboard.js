@@ -106,9 +106,8 @@ async function fetchChildTransactions(childId, txContainer) {
         ? (tx.receiver ? tx.receiver.full_name : 'Unknown') 
         : (tx.sender ? tx.sender.full_name : 'Unknown');
         
-      const title = tx.transaction_type === 'add_money' ? 'Added Money to Wallet' :
-                   (tx.transaction_type === 'recharge' || tx.transaction_type === 'bill_payment') ? `Paid ${tx.description}` :
-                   isSender ? `Paid to ${otherPartyName}` : `Received from ${otherPartyName}`;
+      const title = (tx.transaction_type === 'recharge' || tx.transaction_type === 'bill_payment') ? `Paid ${tx.description}` :
+                    isSender ? `Paid to ${otherPartyName}` : `Received from ${otherPartyName}`;
                    
       const sign = isSender ? '-' : '+';
       const cssClass = isSender ? 'debit' : 'credit';

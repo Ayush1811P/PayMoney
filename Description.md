@@ -133,7 +133,7 @@ PayMoney-main/
 │   ├── supabaseClient.js      # Supabase client instantiation with project URL & Anon key
 │   ├── utils.js               # Global helper library: Auth guard, UPI PIN modal, QR suite
 │   ├── auth.js                # Login/register handlers, password hashing, 2FA workflows
-│   ├── dashboard.js           # Wallet balance toggles, Add Money cooldown, P2P transfers
+│   ├── dashboard.js           # Wallet balance toggles, P2P transfers
 │   ├── upi.js                 # Bank linking logic, PIN setup, and UPI payments
 │   ├── recharge.js            # Telecom plan catalog, prefix detection, recharge execution
 │   ├── electricity.js         # Electricity board data, consumer bill simulation & payment
@@ -186,9 +186,6 @@ PayMoney-main/
 
 ### 5.3 Wallet Management & Dashboard
 - **Balance Privacy Toggle:** Users can mask their balance (`***`) or reveal it (`₹20,000.00`) by clicking an interactive eye icon.
-- **Add Money Cooldown Engine:**
-  - Users can top up their wallet balance using UPI, Debit/Credit Cards, or Net Banking.
-  - **Rate-Limiting Protection:** A strict client/session **1-hour cooldown** (`getAddMoneyCooldown()`) is enforced per user ID. If a user attempts to add money within 60 minutes, the modal is locked and a countdown shows the exact minutes and seconds remaining.
 - **Peer-to-Peer (P2P) Send Money:**
   - Users can enter a recipient mobile number or `@paymoney` UPI ID along with an optional memo/note.
   - The system dynamically looks up the recipient in Supabase, validates that users cannot transfer money to their own account, and verifies sufficient wallet balance.
@@ -283,7 +280,7 @@ PayMoney-main/
   - Supports downloading a clean PNG ticket receipt using `html2canvas`.
 - **Interactive AI Support Chatbot:**
   - Floating chat bubble with responsive drawer layout for mobile and desktop.
-  - Quick-reply chips (Recharge Issues, Reset UPI PIN, Cooldown Limits, KYC Status).
+  - Quick-reply chips for recharge issues, UPI PIN resets, and KYC help.
   - Simulated natural human response latency (900ms) with typing indicators and keyword matching for fast, 24/7 issue triage.
 
 ---
@@ -498,7 +495,6 @@ $$;
    - Max 3 verification attempts before permanent OTP invalidation.
    - 60-second cooldown between OTP requests; max 5 requests per rolling hour.
 4. **Transaction & Balance Safeguards:**
-   - Add Money operations have a client/session 1-hour cooldown.
    - Peer transfers verify sufficient funds before debiting.
    - Transferring money to one's own account is blocked.
    - All balance-deducting actions require active UPI PIN confirmation.

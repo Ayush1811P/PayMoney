@@ -232,14 +232,7 @@ async function loadUpiTransactions() {
     
     const typeClass = isCredit ? 'credit' : 'debit';
     
-    let otherPerson = null;
-    if (tx.transaction_type === 'add_money') {
-      otherPerson = user;
-    } else if (isCredit) {
-      otherPerson = tx.sender;
-    } else {
-      otherPerson = tx.receiver;
-    }
+    const otherPerson = isCredit ? tx.sender : tx.receiver;
     
     const avatarUrl = getAvatarUrl(otherPerson);
     

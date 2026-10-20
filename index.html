@@ -401,7 +401,22 @@ h2.in::after{transform:scaleX(1)}
   .how-grid{grid-template-columns:1fr}.sticky{display:none}.stp{min-height:0;opacity:1;padding:18px 0 18px 24px}
   .facts,.fgrid{grid-template-columns:1fr 1fr}.sent{left:auto;right:0}
 }
-@media(max-width:520px){.actions .btn-line{display:none}.facts,.fgrid{grid-template-columns:1fr}.stores{flex-direction:column;width:100%}}
+@media(max-width:520px){
+  .nav.wrap{padding:0 16px}
+  .nav{gap:8px}
+  .nav .brand{font-size:clamp(1.1rem,6vw,1.4rem)}
+  .actions{flex-shrink:0;gap:6px}
+  .actions .btn{font-size:.875rem;padding:8px}
+  .facts,.fgrid{grid-template-columns:1fr}
+  .stores{flex-direction:column;width:100%}
+}
+@media(max-width:360px){
+  .nav.wrap{padding:0 12px}
+  .nav{gap:4px}
+  .nav .brand{font-size:1rem}
+  .actions{gap:4px}
+  .actions .btn{font-size:.75rem;padding:6px}
+}
 @media(prefers-reduced-motion:reduce){
   *,*::before,*::after{animation:none!important;transition:none!important}
   html{scroll-behavior:auto}
@@ -659,7 +674,7 @@ function startHero(){
   tween(balEl,bal,inr,0,1600);
   if(!RM)setTimeout(()=>{add();setInterval(()=>visible&&add(),3400)},1800);
 }
-const evs=[['Riya Sharma',-500,'₹500 sent','to riya@paymoney'],['Jio recharge',-299,'Recharge done','₹299 plan, 28 days'],['Cashback',50,'₹50 cashback','added to wallet'],['Electricity bill',-1240,'Bill paid','₹1,240 to state board'],['Wallet top-up',2000,'₹2,000 added','from linked bank']];
+const evs=[['Riya Sharma',-500,'₹500 sent','to riya@paymoney'],['Jio recharge',-299,'Recharge done','₹299 plan, 28 days'],['Cashback',50,'₹50 cashback','added to wallet'],['Electricity bill',-1240,'Bill paid','₹1,240 to state board'],['Arjun Mehta',650,'₹650 received','from arjun@paymoney']];
 let k=0,visible=true;
 function add(){
   const [n,a,t1,t2]=evs[k++%evs.length];

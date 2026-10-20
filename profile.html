@@ -107,10 +107,6 @@
                 <label for="fullName">Full Name</label>
                 <input type="text" id="fullName" value="John Doe">
               </div>
-              <div class="form-group">
-                <label for="profileDob">Date of Birth</label>
-                <input type="date" id="profileDob">
-              </div>
             </div>
             
             <div class="form-row">
@@ -123,26 +119,6 @@
                 <label for="profilePhone">Phone Number</label>
                 <input type="tel" id="profilePhone" value="9876543210" disabled>
                 <small>Primary phone number cannot be changed</small>
-              </div>
-            </div>
-            
-            <div class="form-group">
-              <label for="profileAddress">Address</label>
-              <textarea id="profileAddress" rows="3" placeholder="Enter your address"></textarea>
-            </div>
-            
-            <div class="form-row">
-              <div class="form-group">
-                <label for="profileCity">City</label>
-                <input type="text" id="profileCity" placeholder="Enter city">
-              </div>
-              <div class="form-group">
-                <label for="profileState">State</label>
-                <input type="text" id="profileState" placeholder="Enter state">
-              </div>
-              <div class="form-group">
-                <label for="profilePincode">Pincode</label>
-                <input type="text" id="profilePincode" placeholder="Enter pincode">
               </div>
             </div>
             
@@ -159,12 +135,12 @@
             <form id="changePasswordForm">
               <div class="form-group">
                 <label for="currentPassword">Current Password</label>
-                <input type="password" id="currentPassword" required placeholder="Enter current password">
+                <input type="password" id="currentPassword" required autocomplete="current-password" placeholder="Enter current password">
               </div>
               
               <div class="form-group">
                 <label for="newPassword">New Password</label>
-                <input type="password" id="newPassword" required placeholder="Enter new password">
+                <input type="password" id="newPassword" required minlength="6" autocomplete="new-password" placeholder="Enter new password">
                 <div class="password-strength">
                   <div class="strength-meter">
                     <div class="strength-bar" style="width: 0%"></div>
@@ -175,10 +151,19 @@
               
               <div class="form-group">
                 <label for="confirmNewPassword">Confirm New Password</label>
-                <input type="password" id="confirmNewPassword" required placeholder="Confirm new password">
+                <input type="password" id="confirmNewPassword" required minlength="6" autocomplete="new-password" placeholder="Confirm new password">
               </div>
               
               <button type="submit" class="btn btn-primary">Update Password</button>
+            </form>
+            <form id="passwordOtpForm" style="display: none;">
+              <p id="passwordOtpMessage" class="security-info"></p>
+              <div class="form-group">
+                <label for="passwordOtp">Email verification code</label>
+                <input type="text" id="passwordOtp" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]{6}" maxlength="6" required placeholder="Enter 6-digit code">
+              </div>
+              <button type="submit" class="btn btn-primary">Verify Code &amp; Update Password</button>
+              <button type="button" id="cancelPasswordOtpBtn" class="btn btn-outline">Cancel</button>
             </form>
           </div>
           

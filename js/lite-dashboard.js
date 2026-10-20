@@ -113,23 +113,11 @@ async function loadTransactions() {
   const recentTransactions = transactions.slice(0, 5);
   
   recentTransactions.forEach(transaction => {
-    let isCredit = false;
-    if (transaction.transaction_type === 'add_money') {
-      isCredit = true;
-    } else if (transaction.receiver_id === user.id) {
-      isCredit = true;
-    }
+    const isCredit = transaction.receiver_id === user.id;
     
     const typeClass = isCredit ? 'credit' : 'debit';
     
-    let otherPerson = null;
-    if (transaction.transaction_type === 'add_money') {
-      otherPerson = user;
-    } else if (isCredit) {
-      otherPerson = transaction.sender;
-    } else {
-      otherPerson = transaction.receiver;
-    }
+    const otherPerson = isCredit ? transaction.sender : transaction.receiver;
     
     const avatarUrl = getAvatarUrl(otherPerson);
     
