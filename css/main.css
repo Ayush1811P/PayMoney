@@ -444,6 +444,94 @@ input::placeholder, select::placeholder, textarea::placeholder {
   transform: translate(-50%, 0);
 }
 
+.notification.center-popup {
+  top: 50%;
+  right: auto;
+  bottom: auto;
+  left: 50%;
+  transform: translate(-50%, -60%);
+  z-index: 11000;
+}
+
+.notification.center-popup.show {
+  transform: translate(-50%, -50%);
+}
+
+.upi-transaction-state {
+  width: min(90%, 360px);
+  padding: 32px 24px;
+  border-radius: var(--border-radius-lg);
+  background: var(--bg-white);
+  box-shadow: var(--shadow-lg);
+  text-align: center;
+  animation: upi-state-enter 0.25s ease-out;
+}
+
+.upi-transaction-state h3 {
+  margin: 16px 0 8px;
+  color: var(--text-dark);
+}
+
+.upi-transaction-state p {
+  margin: 0;
+  color: var(--text-medium);
+}
+
+.upi-state-icon {
+  position: relative;
+  display: inline-flex;
+  width: 64px;
+  height: 64px;
+  align-items: center;
+  justify-content: center;
+  border: 5px solid var(--primary-light);
+  border-top-color: var(--primary-color);
+  border-radius: 50%;
+  color: var(--success-color);
+}
+
+.upi-transaction-state[data-state="processing"] .upi-state-icon {
+  animation: upi-state-spin 0.8s linear infinite;
+}
+
+.upi-transaction-state[data-state="paid"] .upi-state-icon,
+.upi-transaction-state[data-state="failed"] .upi-state-icon {
+  border: 0;
+  background: var(--success-light);
+  animation: upi-state-success 0.35s ease-out;
+}
+
+.upi-transaction-state[data-state="paid"] .upi-state-icon::after {
+  content: "\2713";
+  font-size: 36px;
+  font-weight: 700;
+}
+
+.upi-transaction-state[data-state="failed"] .upi-state-icon {
+  background: var(--error-light);
+  color: var(--error-color);
+}
+
+.upi-transaction-state[data-state="failed"] .upi-state-icon::after {
+  content: "\00D7";
+  font-size: 44px;
+  font-weight: 400;
+}
+
+@keyframes upi-state-spin {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes upi-state-success {
+  from { transform: scale(0.65); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+@keyframes upi-state-enter {
+  from { transform: translateY(8px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
 /* Footer */
 .main-footer {
   background-color: var(--secondary-color);

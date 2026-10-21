@@ -11,11 +11,6 @@ document.addEventListener('DOMContentLoaded', async function() {
   initProfileTabs();
   initAvatarChange();
   
-  const personalInfoForm = document.getElementById('personalInfoForm');
-  if (personalInfoForm) {
-    personalInfoForm.addEventListener('submit', handlePersonalInfoUpdate);
-  }
-  
   const changePasswordForm = document.getElementById('changePasswordForm');
   if (changePasswordForm) {
     changePasswordForm.addEventListener('submit', handlePasswordChange);
@@ -257,32 +252,6 @@ function initAvatarChange() {
   }
 }
 
-async function handlePersonalInfoUpdate(e) {
-  e.preventDefault();
-  const fullName = document.getElementById('fullName').value.trim();
-  const emailInput = document.getElementById('profileEmailInput');
-  const email = emailInput ? emailInput.value.trim() : '';
-  
-  if (!fullName) {
-    showNotification('Name is required', 'error');
-    return;
-  }
-  
-  const user = await getUser();
-  const { error } = await supabaseClient
-    .from('profiles')
-    .update({ full_name: fullName, email: email })
-    .eq('id', user.id);
-    
-  if (error) {
-    showNotification('Error updating profile', 'error');
-  } else {
-    showNotification('Profile updated successfully');
-    await loadProfileData();
-    await updateUserInfo(); // Re-render header
-  }
-}
-
 async function handlePasswordChange(e) {
   e.preventDefault();
   const currentPassword = document.getElementById('currentPassword').value;
@@ -363,8 +332,8 @@ async function handlePasswordOtpVerification(e) {
     return;
   }
 
-  if (!/^\d{6}$/.test(otp)) {
-    showNotification('Enter the 6-digit verification code', 'error');
+  if (!/^\d{8}$/.test(otp)) {
+    showNotification('Enter the 8-digit verification code', 'error');
     return;
   }
 

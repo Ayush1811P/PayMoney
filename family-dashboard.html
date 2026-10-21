@@ -35,6 +35,40 @@
       font-size: 1.25rem;
       font-weight: 700;
       color: var(--primary-color);
+      position: absolute;
+      left: 50%;
+      transform: translateX(-50%);
+      text-align: center;
+      white-space: nowrap;
+    }
+    .lite-balance-row {
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      min-height: 44px;
+      margin-bottom: var(--spacing-md);
+    }
+    .send-child-money-btn {
+      position: relative;
+      z-index: 1;
+    }
+    .parent-transfer-modal-content h3 {
+      margin-bottom: var(--spacing-lg);
+      color: var(--secondary-color);
+    }
+    @media (max-width: 420px) {
+      .lite-balance-row {
+        min-height: 76px;
+        align-items: flex-end;
+      }
+      .lite-balance {
+        top: 0;
+        font-size: 1.15rem;
+      }
+      .send-child-money-btn {
+        width: 100%;
+      }
     }
     .lite-transactions-container {
       background-color: var(--bg-light);
@@ -120,6 +154,23 @@
       <p style="text-align: center; color: var(--text-light); margin: 40px 0;">Loading linked accounts...</p>
     </div>
   </main>
+
+  <div id="parentTransferModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="parentTransferTitle">
+    <div class="modal-content parent-transfer-modal-content">
+      <button type="button" id="closeParentTransferModal" class="close-modal" aria-label="Close">&times;</button>
+      <h3 id="parentTransferTitle">Send money to child</h3>
+      <form id="parentTransferForm">
+        <div class="form-group">
+          <label for="parentTransferAmount">Amount (₹)</label>
+          <input type="text" id="parentTransferAmount" inputmode="decimal" pattern="[0-9]+(\.[0-9]{1,2})?" required placeholder="Enter amount">
+        </div>
+        <div class="confirmation-actions">
+          <button type="button" id="cancelParentTransfer" class="btn btn-outline">Cancel</button>
+          <button type="submit" id="confirmParentTransfer" class="btn btn-primary">Continue to PIN</button>
+        </div>
+      </form>
+    </div>
+  </div>
   
   <div id="notification" class="notification"></div>
 

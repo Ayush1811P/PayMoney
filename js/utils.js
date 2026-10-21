@@ -5,7 +5,7 @@
 let cachedProfile = null;
 
 // Show notification
-function showNotification(message, type = 'success', position = '') {
+function showNotification(message, type = 'success', position = '', duration = 3000) {
   const notification = document.getElementById('notification');
   if(!notification) return;
   notification.textContent = message;
@@ -17,7 +17,7 @@ function showNotification(message, type = 'success', position = '') {
   
   setTimeout(() => {
     notification.classList.remove('show');
-  }, 3000);
+  }, duration);
 }
 
 // Format currency
@@ -1374,21 +1374,33 @@ function injectUpiModals() {
           <h3>Enter UPI PIN</h3>
           <button class="upi-global-close" onclick="closeUpiModals()">&times;</button>
         </div>
-        <div class="upi-global-body">
-          <p style="text-align: center; color: var(--text-light); margin-bottom: 20px;">Paying <strong id="globalUpiPayAmount"></strong></p>
-          
-          <div class="form-group" style="text-align: center; margin-bottom: 20px;">
-            <input type="password" id="globalPhysicalUpiPin" placeholder="****" maxlength="4" style="text-align: center; letter-spacing: 10px; font-size: 1.5rem; padding: 10px; width: 50%; border-radius: var(--border-radius-md); border: 1px solid var(--border-color); margin: 0 auto;">
+        <form id="globalUpiPinForm">
+          <div class="upi-global-body">
+            <p style="text-align: center; color: var(--text-light); margin-bottom: 20px;">Paying <strong id="globalUpiPayAmount"></strong></p>
+
+            <div class="form-group" style="text-align: center; margin-bottom: 20px;">
+              <input type="password" id="globalPhysicalUpiPin" inputmode="numeric" pattern="[0-9]{4}" required placeholder="****" maxlength="4" style="text-align: center; letter-spacing: 10px; font-size: 1.5rem; padding: 10px; width: 50%; border-radius: var(--border-radius-md); border: 1px solid var(--border-color); margin: 0 auto;">
+            </div>
+
+            <div style="text-align: center;">
+              <button id="submitUpiPinBtn" type="submit" class="btn btn-primary" style="width: 100%;">Confirm Payment</button>
+            </div>
           </div>
-          
-          <div style="text-align: center;">
-            <button class="btn btn-primary" onclick="submitUpiPin()" style="width: 100%;">Confirm Payment</button>
-          </div>
-        </div>
+        </form>
+      </div>
+
+      <div id="upiTransactionState" class="upi-transaction-state" data-state="processing" role="status" aria-live="polite" style="display: none;">
+        <span class="upi-state-icon" aria-hidden="true"></span>
+        <h3 id="upiTransactionStateTitle">Processing</h3>
+        <p id="upiTransactionStateMessage">Please wait while we process your payment.</p>
       </div>
     </div>
   `;
   document.body.insertAdjacentHTML('beforeend', html);
+  document.getElementById('globalUpiPinForm').addEventListener('submit', event => {
+    event.preventDefault();
+    submitUpiPin();
+  });
 }
 
 function closeUpiModals() {
@@ -1398,7 +1410,24 @@ function closeUpiModals() {
     document.getElementById('addBankModal').style.display = 'none';
     document.getElementById('setUpiModal').style.display = 'none';
     document.getElementById('enterUpiModal').style.display = 'none';
+    document.getElementById('upiTransactionState').style.display = 'none';
   }
+}
+
+function setUpiTransactionState(state, title, message) {
+  const transactionState = document.getElementById('upiTransactionState');
+  if (!transactionState) {
+    throw new Error('Payment status display is unavailable');
+  }
+
+  transactionState.dataset.state = state;
+  document.getElementById('upiTransactionStateTitle').textContent = title;
+  document.getElementById('upiTransactionStateMessage').textContent = message;
+  transactionState.style.display = 'block';
+}
+
+function waitForUpiTransactionAnimation(duration = 900) {
+  return new Promise(resolve => setTimeout(resolve, duration));
 }
 
 async function requireUpiVerification(amount, onSuccess) {
@@ -1531,34 +1560,69 @@ function updatePinDots() {
 }
 
 async function submitUpiPin() {
+  const submitButton = document.getElementById('submitUpiPinBtn');
+  if (submitButton && submitButton.disabled) return;
+
   try {
     const pinInput = document.getElementById('globalPhysicalUpiPin');
     const pinValue = pinInput ? pinInput.value : currentUpiPin;
 
     if (pinValue.length !== PIN_LENGTH) {
-      showNotification('Please enter 4-digit PIN', 'error');
+      showNotification('Please enter 4-digit PIN', 'error', 'center-popup');
       return;
+    }
+
+    if (submitButton) {
+      submitButton.disabled = true;
+      submitButton.textContent = 'Verifying...';
     }
 
     const user = await getUser();
     const hashedInputPin = await hashPassword(pinValue);
 
     if (user.upi_pin !== hashedInputPin) {
-      showNotification('Incorrect UPI PIN', 'error');
+      globalUpiCallback = null;
+      showNotification('Incorrect UPI PIN', 'error', 'center-popup', 2000);
       clearUpiPin();
+      await waitForUpiTransactionAnimation(2000);
+      closeUpiModals();
+      document.getElementById('upiGlobalOverlay').classList.add('show');
+      setUpiTransactionState('failed', 'Payment failed', 'Incorrect UPI PIN. The payment was not completed.');
+      await waitForUpiTransactionAnimation();
+      closeUpiModals();
       return;
     }
 
-    // Correct PIN
+    if (typeof globalUpiCallback !== 'function') {
+      throw new Error('Payment action is unavailable. Please try again.');
+    }
+
     clearUpiPin();
     closeUpiModals();
-    if (globalUpiCallback) {
-      await globalUpiCallback();
-    }
+    const overlay = document.getElementById('upiGlobalOverlay');
+    overlay.classList.add('show');
+    setUpiTransactionState('processing', 'Processing', 'Please wait while we process your payment.');
+
+    await globalUpiCallback();
+
+    setUpiTransactionState('paid', 'Paid', 'Your payment was completed successfully.');
+    await waitForUpiTransactionAnimation();
+    closeUpiModals();
   } catch (error) {
     console.error('Transaction error:', error);
-    showNotification('Error: ' + (error.message || 'Transaction failed'), 'error');
-    closeUpiModals();
+    const errorMessage = error.message || 'Transaction failed';
+    try {
+      setUpiTransactionState('failed', 'Payment failed', errorMessage);
+      await waitForUpiTransactionAnimation();
+    } finally {
+      closeUpiModals();
+      showNotification(errorMessage, 'error', 'center-popup');
+    }
+  } finally {
+    if (submitButton) {
+      submitButton.disabled = false;
+      submitButton.textContent = 'Confirm Payment';
+    }
   }
 }
 

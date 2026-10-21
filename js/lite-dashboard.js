@@ -53,16 +53,11 @@ async function loadLiteAccountDetails() {
 // Load wallet data
 async function loadWalletData() {
   const walletBalanceElement = document.getElementById('walletBalance');
-  const lastUpdatedElement = document.getElementById('lastUpdated');
-  
   if (walletBalanceElement) {
     const profile = await getProfile();
     if (profile) {
       currentWalletBalance = profile.wallet_balance;
       updateBalanceUI();
-      if (lastUpdatedElement) {
-        lastUpdatedElement.textContent = 'Live Data';
-      }
     }
   }
 }

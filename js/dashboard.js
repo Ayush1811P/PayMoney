@@ -36,8 +36,6 @@ document.addEventListener('DOMContentLoaded', async function() {
 // Load wallet data
 async function loadWalletData() {
   const walletBalanceElement = document.getElementById('walletBalance');
-  const lastUpdatedElement = document.getElementById('lastUpdated');
-  
   if (walletBalanceElement) {
     const profile = await getProfile();
     if (profile) {
@@ -45,10 +43,6 @@ async function loadWalletData() {
       
       // Update UI based on visibility state
       updateBalanceUI();
-      
-      if (lastUpdatedElement && profile.created_at) {
-        lastUpdatedElement.textContent = 'Live Data'; // Or format latest txn
-      }
     }
   }
 }
