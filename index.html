@@ -218,11 +218,11 @@ input[type=range]{width:100%;accent-color:var(--sky);height:6px}
 .dl h2{color:#fff}.dl .lead{color:rgba(255,255,255,.8)}
 .soon{display:inline-block;background:var(--sky);color:var(--navy);font-size:.8rem;font-weight:700;padding:3px 12px;border-radius:999px;vertical-align:middle;margin-left:10px;animation:glow 2s infinite}
 @keyframes glow{0%{box-shadow:0 0 0 0 rgba(212,162,76,.7)}100%{box-shadow:0 0 0 14px rgba(212,162,76,0)}}
-.app-dl-wrap{display:flex;align-items:center}
-.app-download-btn{display:inline-flex;align-items:center;gap:12px;background:linear-gradient(135deg,#f3d9a0,var(--sky) 50%,#b8832e);color:#0a0a0a;font-weight:800;font-size:1.05rem;padding:15px 32px;border-radius:14px;border:1.5px solid rgba(243,217,160,.5);box-shadow:0 10px 28px rgba(212,162,76,.35);text-decoration:none;position:relative;overflow:hidden;cursor:pointer;letter-spacing:-.2px;transition:transform .25s var(--ease),box-shadow .25s var(--ease),filter .2s var(--ease)}
+.app-dl-wrap{display:flex;align-items:center;position:relative;z-index:10}
+.app-download-btn{display:inline-flex;align-items:center;gap:12px;background:linear-gradient(135deg,#f3d9a0,var(--sky) 50%,#b8832e);color:#0a0a0a;font-weight:800;font-size:1.05rem;padding:15px 32px;border-radius:14px;border:1.5px solid rgba(243,217,160,.5);box-shadow:0 10px 28px rgba(212,162,76,.35);text-decoration:none;position:relative;z-index:10;pointer-events:auto;overflow:hidden;cursor:pointer;letter-spacing:-.2px;transition:transform .25s var(--ease),box-shadow .25s var(--ease),filter .2s var(--ease)}
 .app-download-btn:hover{transform:translateY(-4px);box-shadow:0 16px 36px rgba(212,162,76,.55);filter:brightness(1.05);color:#000}
 .app-download-btn:active{transform:scale(.97)}
-.app-download-btn::after{content:"";position:absolute;top:0;left:-70%;width:40%;height:100%;background:rgba(255,255,255,.45);transform:skewX(-20deg);transition:left .65s ease}
+.app-download-btn::after{content:"";position:absolute;top:0;left:-70%;width:40%;height:100%;background:rgba(255,255,255,.45);transform:skewX(-20deg);transition:left .65s ease;pointer-events:none}
 .app-download-btn:hover::after{left:130%}
 .app-download-btn .dl-icon{width:22px;height:22px;flex-shrink:0;transition:transform .25s var(--ease)}
 .app-download-btn:hover .dl-icon{transform:translateY(3px)}
@@ -267,8 +267,8 @@ h2.in::after{transform:scaleX(1)}
 @keyframes ping{to{transform:scale(1.9);opacity:0}}
 .link::before{content:"";position:absolute;left:50%;top:0;width:8px;height:8px;margin-left:-4px;border-radius:50%;background:var(--ok);animation:trav 1.8s -.9s ease-in-out infinite alternate}
 .dl{position:relative;overflow:hidden}
-.dl .wrap{position:relative}
-.dl::before,.dl::after{content:"";position:absolute;border-radius:50%;border:2px dashed rgba(212,162,76,.3);width:360px;height:360px;right:-70px;top:50%;margin-top:-180px;animation:spinr 14s linear infinite}
+.dl .wrap{position:relative;z-index:2}
+.dl::before,.dl::after{content:"";position:absolute;border-radius:50%;border:2px dashed rgba(212,162,76,.3);width:360px;height:360px;right:-70px;top:50%;margin-top:-180px;animation:spinr 14s linear infinite;pointer-events:none;z-index:1}
 .dl::after{width:580px;height:580px;margin-top:-290px;right:-180px;animation-duration:22s;animation-direction:reverse}
 
 /* numbered steps + lite button */
@@ -625,7 +625,7 @@ h2.in::after{transform:scaleX(1)}
     <div class="rv"><h2>Get the PayMoney app</h2>
     <p class="lead">Download the official PayMoney Android app directly to your phone. Fast, secure, and fee-free payments wherever you go.</p></div>
     <div class="app-dl-wrap rv" style="--i:1">
-      <a href="PayMoney.apk" download="PayMoney.apk" class="app-download-btn" id="btn-download-app" aria-label="Download the PayMoney Android App">
+      <a href="/PayMoney.apk" download="PayMoney.apk" class="app-download-btn" id="btn-download-app" aria-label="Download the PayMoney Android App">
         <svg class="dl-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
           <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
           <polyline points="7 10 12 15 17 10"></polyline>
@@ -817,6 +817,8 @@ if(!RM&&matchMedia('(hover:hover)').matches){
   if (!dlBtn) return;
   if (location.protocol === 'file:') {
     dlBtn.href = 'https://paymoney18.netlify.app/PayMoney.apk';
+  } else {
+    dlBtn.href = '/PayMoney.apk';
   }
   dlBtn.addEventListener('click', function() {
     const textSpan = dlBtn.querySelector('span');
