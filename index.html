@@ -218,10 +218,15 @@ input[type=range]{width:100%;accent-color:var(--sky);height:6px}
 .dl h2{color:#fff}.dl .lead{color:rgba(255,255,255,.8)}
 .soon{display:inline-block;background:var(--sky);color:var(--navy);font-size:.8rem;font-weight:700;padding:3px 12px;border-radius:999px;vertical-align:middle;margin-left:10px;animation:glow 2s infinite}
 @keyframes glow{0%{box-shadow:0 0 0 0 rgba(212,162,76,.7)}100%{box-shadow:0 0 0 14px rgba(212,162,76,0)}}
-.stores{display:flex;gap:14px}
-.store{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.25);border-radius:12px;padding:10px 22px;line-height:1.3;cursor:not-allowed;transition:transform .3s var(--ease)}
-.store:hover{transform:translateY(-4px)}
-.store small{display:block;font-size:.75rem;opacity:.8}.store b{font-size:1.1rem}
+.app-dl-wrap{display:flex;align-items:center}
+.app-download-btn{display:inline-flex;align-items:center;gap:12px;background:linear-gradient(135deg,#f3d9a0,var(--sky) 50%,#b8832e);color:#0a0a0a;font-weight:800;font-size:1.05rem;padding:15px 32px;border-radius:14px;border:1.5px solid rgba(243,217,160,.5);box-shadow:0 10px 28px rgba(212,162,76,.35);text-decoration:none;position:relative;overflow:hidden;cursor:pointer;letter-spacing:-.2px;transition:transform .25s var(--ease),box-shadow .25s var(--ease),filter .2s var(--ease)}
+.app-download-btn:hover{transform:translateY(-4px);box-shadow:0 16px 36px rgba(212,162,76,.55);filter:brightness(1.05);color:#000}
+.app-download-btn:active{transform:scale(.97)}
+.app-download-btn::after{content:"";position:absolute;top:0;left:-70%;width:40%;height:100%;background:rgba(255,255,255,.45);transform:skewX(-20deg);transition:left .65s ease}
+.app-download-btn:hover::after{left:130%}
+.app-download-btn .dl-icon{width:22px;height:22px;flex-shrink:0;transition:transform .25s var(--ease)}
+.app-download-btn:hover .dl-icon{transform:translateY(3px)}
+@media(max-width:640px){.app-dl-wrap{width:100%}.app-download-btn{width:100%;justify-content:center;padding:16px 24px;font-size:1.02rem}}
 
 footer{background:#050505;color:#d9d2c2;padding:56px 0 28px}
 .fgrid{display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:32px}
@@ -617,10 +622,17 @@ h2.in::after{transform:scaleX(1)}
 
 <section class="dl" id="download">
   <div class="wrap">
-    <div class="rv"><h2>Get the PayMoney app<span class="soon">Coming soon</span></h2>
-    <p class="lead">The mobile app is on its way. Until then, PayMoney works in any phone browser.</p></div>
-    <div class="stores rv" style="--i:1" aria-label="App stores, coming soon">
-      <div class="store"><small>Get it on</small><b>Google Play</b></div><div class="store"><small>Download on the</small><b>App Store</b></div>
+    <div class="rv"><h2>Get the PayMoney app</h2>
+    <p class="lead">Download the official PayMoney Android app directly to your phone. Fast, secure, and fee-free payments wherever you go.</p></div>
+    <div class="app-dl-wrap rv" style="--i:1">
+      <a href="PayMoney.apk" download="PayMoney.apk" class="app-download-btn btn-lg" id="btn-download-app" aria-label="Download the PayMoney Android App">
+        <svg class="dl-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+          <polyline points="7 10 12 15 17 10"></polyline>
+          <line x1="12" y1="15" x2="12" y2="3"></line>
+        </svg>
+        <span>Download the App</span>
+      </a>
     </div>
   </div>
 </section>

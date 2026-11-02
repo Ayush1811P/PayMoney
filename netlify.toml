@@ -5,3 +5,22 @@
 [dev]
   port = 8888
   publish = "."
+
+[[headers]]
+  for = "/PayMoney.apk"
+  [headers.values]
+    Content-Type = "application/vnd.android.package-archive"
+    Content-Disposition = "attachment; filename=\"PayMoney.apk\""
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  for = "/paymoney.apk"
+  [headers.values]
+    Content-Type = "application/vnd.android.package-archive"
+    Content-Disposition = "attachment; filename=\"PayMoney.apk\""
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[[redirects]]
+  from = "/paymoney.apk"
+  to = "/PayMoney.apk"
+  status = 200
