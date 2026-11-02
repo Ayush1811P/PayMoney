@@ -625,7 +625,7 @@ h2.in::after{transform:scaleX(1)}
     <div class="rv"><h2>Get the PayMoney app</h2>
     <p class="lead">Download the official PayMoney Android app directly to your phone. Fast, secure, and fee-free payments wherever you go.</p></div>
     <div class="app-dl-wrap rv" style="--i:1">
-      <a href="PayMoney.apk" download="PayMoney.apk" class="app-download-btn btn-lg" id="btn-download-app" aria-label="Download the PayMoney Android App">
+      <a href="PayMoney.apk" download="PayMoney.apk" class="app-download-btn" id="btn-download-app" aria-label="Download the PayMoney Android App">
         <svg class="dl-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
           <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
           <polyline points="7 10 12 15 17 10"></polyline>
@@ -809,6 +809,23 @@ if(!RM&&matchMedia('(hover:hover)').matches){
     }).then(done).catch(done);
   }catch(e){done()}
   setTimeout(done,7000);
+})();
+
+/* direct APK download helper */
+(function(){
+  const dlBtn = document.getElementById('btn-download-app');
+  if (!dlBtn) return;
+  if (location.protocol === 'file:') {
+    dlBtn.href = 'https://paymoney18.netlify.app/PayMoney.apk';
+  }
+  dlBtn.addEventListener('click', function() {
+    const textSpan = dlBtn.querySelector('span');
+    if (textSpan) {
+      const orig = textSpan.textContent;
+      textSpan.textContent = 'Downloading...';
+      setTimeout(() => { textSpan.textContent = orig; }, 3500);
+    }
+  });
 })();
 </script>
 </body>
