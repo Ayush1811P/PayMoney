@@ -466,8 +466,12 @@ async function handleScanQr(e) {
   scanQrModal.style.display = 'block';
   
   try {
-    // Load html5-qrcode library
-    await loadScript('https://cdn.jsdelivr.net/npm/html5-qrcode@2.3.8/html5-qrcode.min.js');
+    // Load html5-qrcode from a CDN, with an alternate CDN for blocked/cached deployments.
+    try {
+      await loadScript('https://cdn.jsdelivr.net/npm/html5-qrcode@2.3.8/html5-qrcode.min.js');
+    } catch (primaryLibraryError) {
+      await loadScript('https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js');
+    }
     
     // Wire up file upload handler
     setupFileInputListener();
@@ -552,7 +556,32 @@ function setupFileInputListener() {
               const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
               
               try {
-                // Try Engine 1: Html5Qrcode scanFile (highly optimized for screenshots/noise)
+                await loadScript('https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js');
+
+                // Decode at several resolutions so screenshots and compressed gallery images work reliably.
+                const scales = [1, 2, 3];
+                let code = null;
+                for (const scale of scales) {
+                  const decodeCanvas = document.createElement('canvas');
+                  decodeCanvas.width = Math.min(canvas.width * scale, 1600);
+                  decodeCanvas.height = Math.min(canvas.height * scale, 1600);
+                  const decodeContext = decodeCanvas.getContext('2d', { willReadFrequently: true });
+                  decodeContext.imageSmoothingEnabled = false;
+                  decodeContext.drawImage(canvas, 0, 0, decodeCanvas.width, decodeCanvas.height);
+                  const decodedImageData = decodeContext.getImageData(0, 0, decodeCanvas.width, decodeCanvas.height);
+                  code = jsQR(decodedImageData.data, decodedImageData.width, decodedImageData.height, {
+                    inversionAttempts: 'attemptBoth'
+                  });
+                  if (code) break;
+                }
+
+                if (code) {
+                  if (loadingBarContainer) loadingBarContainer.style.display = 'none';
+                  await onQrScanSuccess(code.data);
+                  return;
+                }
+
+                // Final gallery fallback using the QR library's file decoder.
                 try {
                   const html5Qr = new Html5Qrcode("qrReader");
                   const decodedText = await html5Qr.scanFile(imageFile, false);
@@ -560,19 +589,11 @@ function setupFileInputListener() {
                   await onQrScanSuccess(decodedText);
                   return;
                 } catch (html5Err) {
-                  console.warn("Engine 1 (Html5Qrcode) scan file failed, trying Engine 2 (jsQR)...", html5Err);
+                  console.warn("Html5Qrcode gallery fallback failed:", html5Err);
                 }
 
-                // Try Engine 2: jsQR pixel array decoder (fallback)
-                await loadScript('https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js');
-                const code = jsQR(imageData.data, imageData.width, imageData.height);
-                if (code) {
-                  if (loadingBarContainer) loadingBarContainer.style.display = 'none';
-                  await onQrScanSuccess(code.data);
-                } else {
-                  showNotification("Could not find a valid QR code in the image. Please select a clear QR code.", "error");
-                  resetScannerView();
-                }
+                showNotification("Could not find a valid QR code in the image. Please choose a clear, full-size QR image.", "error");
+                resetScannerView();
               } catch (err) {
                 console.error("Dual-engine QR scan failed:", err);
                 showNotification("Failed to scan QR image.", "error");
@@ -1188,6 +1209,18 @@ function injectScanQrModals() {
   }
 }
 
+function canvasToPngFile(canvas, fileName) {
+  return new Promise((resolve, reject) => {
+    canvas.toBlob((blob) => {
+      if (!blob) {
+        reject(new Error('Could not create QR image'));
+        return;
+      }
+      resolve(new File([blob], fileName, { type: 'image/png' }));
+    }, 'image/png', 1);
+  });
+}
+
 // Handle QR Display and Render
 async function handleShowQr(e) {
   e.preventDefault();
@@ -1255,14 +1288,38 @@ async function handleShowQr(e) {
     const downloadBtn = document.getElementById('downloadQrBtn');
     const newDownloadBtn = downloadBtn.cloneNode(true);
     downloadBtn.parentNode.replaceChild(newDownloadBtn, downloadBtn);
+    newDownloadBtn.textContent = 'Save / Download QR Code';
     
-    newDownloadBtn.addEventListener('click', () => {
-      const dataUrl = canvas.toDataURL('image/png');
-      const link = document.createElement('a');
-      link.download = `${fullName.replace(/\s+/g, '_')}_paymoney_qr.png`;
-      link.href = dataUrl;
-      link.click();
-      showNotification('QR Code downloaded successfully');
+    newDownloadBtn.addEventListener('click', async () => {
+      try {
+        const fileName = `${fullName.replace(/\s+/g, '_')}_paymoney_qr.png`;
+        const qrFile = await canvasToPngFile(canvas, fileName);
+
+        if (navigator.share && navigator.canShare &&
+            navigator.canShare({ files: [qrFile] })) {
+          await navigator.share({
+            files: [qrFile],
+            title: 'PayMoney QR Code',
+            text: 'My PayMoney QR code'
+          });
+          showNotification('Use the share menu to save the QR code to Photos or Gallery.');
+          return;
+        }
+
+        const objectUrl = URL.createObjectURL(qrFile);
+        const link = document.createElement('a');
+        link.download = fileName;
+        link.href = objectUrl;
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        window.setTimeout(() => URL.revokeObjectURL(objectUrl), 1000);
+        showNotification('QR Code saved to Downloads.');
+      } catch (error) {
+        if (error && error.name === 'AbortError') return;
+        console.error('QR download failed:', error);
+        showNotification('Could not save the QR image. Long-press the QR and choose Save image.', 'error');
+      }
     });
     
   } catch (error) {
