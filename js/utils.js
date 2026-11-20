@@ -782,15 +782,14 @@ function parseUpiQr(decodedText) {
     const query = text.slice(text.indexOf('?') + 1).split('#Intent')[0];
     parameters = new URLSearchParams(query);
   } else {
-    const embeddedFields = text.match(/(?:^|[?&#])(?:pa|pn|am|cu|tn)=([^&#\s]+)/gi) || [];
-    embeddedFields.forEach((field) => {
-      const separatorIndex = field.indexOf('=');
-      if (separatorIndex >= 0) {
-        const key = field.slice(field.lastIndexOf('&') + 1).split('=')[0].toLowerCase();
+    const fieldNames = ['pa', 'pn', 'am', 'cu', 'tn'];
+    fieldNames.forEach((fieldName) => {
+      const fieldMatch = text.match(new RegExp(`(?:^|[?&#])${fieldName}=([^&#\\s]+)`, 'i'));
+      if (fieldMatch) {
         try {
-          parameters.append(key, decodeURIComponent(field.slice(separatorIndex + 1)));
+          parameters.append(fieldName, decodeURIComponent(fieldMatch[1]));
         } catch (decodeError) {
-          parameters.append(key, field.slice(separatorIndex + 1));
+          parameters.append(fieldName, fieldMatch[1]);
         }
       }
     });
@@ -828,11 +827,14 @@ function parseUpiQr(decodedText) {
       parameters.set('pa', emvTags.get('pa') || '');
       if (emvTags.has('pn')) parameters.set('pn', emvTags.get('pn') || '');
     }
+    if (emvTags.has('53') && emvTags.get('53') === '356') parameters.set('cu', 'INR');
+    if (emvTags.has('54') && emvTags.get('54')) parameters.set('am', emvTags.get('54') || '');
+    if (!emvTags.has('pn') && emvTags.has('59')) parameters.set('pn', emvTags.get('59') || '');
   }
 
   if (!parameters.has('pa')) {
-    const upiMatch = text.match(/[a-z0-9._-]+@[a-z0-9.-]+/i);
-    if (upiMatch) parameters.set('pa', upiMatch[0]);
+    const upiMatch = text.match(/(?:^|[^a-z0-9._-])([a-z0-9][a-z0-9._-]{1,63}@[a-z0-9][a-z0-9.-]{1,31})/i);
+    if (upiMatch) parameters.set('pa', upiMatch[1]);
   }
 
   if (!parameters.has('pa')) {
