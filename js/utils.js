@@ -770,18 +770,72 @@ let scannedReceiver = null;
 let scannedQrPaymentDetails = null;
 
 function parseUpiQr(decodedText) {
-  const text = decodedText.trim();
+  const text = decodedText.replace(/\0/g, '').trim();
   let parameters = new URLSearchParams();
 
-  if (/^upi:\/\/pay\/?\?/i.test(text)) {
-    parameters = new URLSearchParams(text.slice(text.indexOf('?') + 1));
-  } else if (/^intent:\/\/pay\?/i.test(text)) {
+  if (/upi:\/\/pay\/?\?/i.test(text)) {
+    const uriStart = text.search(/upi:\/\/pay\/?\?/i);
+    const uriText = text.slice(uriStart).split(/\s|\r|\n/)[0].replace(/#Intent.*$/i, '');
+    const queryIndex = uriText.indexOf('?');
+    parameters = new URLSearchParams(uriText.slice(queryIndex + 1));
+  } else if (/intent:\/\/pay\?/i.test(text)) {
     const query = text.slice(text.indexOf('?') + 1).split('#Intent')[0];
     parameters = new URLSearchParams(query);
-  } else if (/^[^@\s?&]+@[^@\s?&]+$/.test(text)) {
-    parameters.set('pa', text);
-    parameters.set('cu', 'INR');
   } else {
+    const embeddedFields = text.match(/(?:^|[?&#])(?:pa|pn|am|cu|tn)=([^&#\s]+)/gi) || [];
+    embeddedFields.forEach((field) => {
+      const separatorIndex = field.indexOf('=');
+      if (separatorIndex >= 0) {
+        const key = field.slice(field.lastIndexOf('&') + 1).split('=')[0].toLowerCase();
+        try {
+          parameters.append(key, decodeURIComponent(field.slice(separatorIndex + 1)));
+        } catch (decodeError) {
+          parameters.append(key, field.slice(separatorIndex + 1));
+        }
+      }
+    });
+  }
+
+  if (!parameters.has('pa')) {
+    const emvTags = new URLSearchParams();
+    let emvIndex = 0;
+    while (emvIndex + 4 <= text.length) {
+      const tag = text.slice(emvIndex, emvIndex + 2);
+      const lengthText = text.slice(emvIndex + 2, emvIndex + 4);
+      if (!/^\d{2}$/.test(tag) || !/^\d{2}$/.test(lengthText)) break;
+      const length = Number(lengthText);
+      if (!Number.isInteger(length) || length < 0 || emvIndex + 4 + length > text.length) break;
+      const value = text.slice(emvIndex + 4, emvIndex + 4 + length);
+      emvTags.append(tag, value);
+      if (['26', '27', '28', '29', '30', '31'].includes(tag)) {
+        let nestedIndex = 0;
+        while (nestedIndex + 4 <= value.length) {
+          const nestedTag = value.slice(nestedIndex, nestedIndex + 2);
+          const nestedLength = Number(value.slice(nestedIndex + 2, nestedIndex + 4));
+          if (!Number.isInteger(nestedLength) || nestedIndex + 4 + nestedLength > value.length) break;
+          const nestedValue = value.slice(nestedIndex + 4, nestedIndex + 4 + nestedLength);
+          if (nestedTag === '01' || nestedTag === '02') {
+            emvTags.append('pa', nestedValue);
+          } else if (nestedTag === '03') {
+            emvTags.append('pn', nestedValue);
+          }
+          nestedIndex += 4 + nestedLength;
+        }
+      }
+      emvIndex += 4 + length;
+    }
+    if (emvTags.has('pa')) {
+      parameters.set('pa', emvTags.get('pa') || '');
+      if (emvTags.has('pn')) parameters.set('pn', emvTags.get('pn') || '');
+    }
+  }
+
+  if (!parameters.has('pa')) {
+    const upiMatch = text.match(/[a-z0-9._-]+@[a-z0-9.-]+/i);
+    if (upiMatch) parameters.set('pa', upiMatch[0]);
+  }
+
+  if (!parameters.has('pa')) {
     return null;
   }
 
