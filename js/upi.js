@@ -67,6 +67,10 @@ document.addEventListener('DOMContentLoaded', async function() {
   const sendUpiBtn = document.getElementById('sendUpiBtn');
   if (sendUpiBtn) {
     sendUpiBtn.addEventListener('click', () => {
+      const recipientUpiIdInput = document.getElementById('recipientUpiId');
+      if (recipientUpiIdInput && !recipientUpiIdInput.dataset.scannedRecipient) {
+        recipientUpiIdInput.readOnly = false;
+      }
       document.getElementById('sendUpiModal').style.display = 'block';
     });
   }
@@ -106,6 +110,7 @@ document.addEventListener('DOMContentLoaded', async function() {
     if (recipientUpiIdInput) {
       recipientUpiIdInput.value = qrUpiId;
       recipientUpiIdInput.readOnly = true;
+      recipientUpiIdInput.dataset.scannedRecipient = 'true';
     }
 
     const qrAmount = urlParams.get('am');
@@ -360,7 +365,7 @@ async function handleCreateUpi(e) {
 async function handleSendUpi(e) {
   e.preventDefault();
   
-  const recipientUpiId = document.getElementById('recipientUpiId').value.trim();
+  const recipientUpiId = document.getElementById('recipientUpiId').value.trim().toLowerCase();
   const upiSendAmount = document.getElementById('upiSendAmount').value;
   const note = document.getElementById('upiSendNote').value.trim();
   
@@ -396,8 +401,8 @@ async function handleSendUpi(e) {
   // Lookup receiver by UPI ID or Mobile Number
   let query = supabaseClient.from('profiles').select('id, wallet_balance, upi_id, phone');
   if (recipientUpiId.includes('@')) {
-    if (recipientUpiId.endsWith('@paymoney')) {
-      const phoneNum = recipientUpiId.split('@')[0];
+    const phoneNum = recipientUpiId.split('@')[0];
+    if (/^\d{10}$/.test(phoneNum) && /(paymoney|paymoneylite)$/.test(recipientUpiId)) {
       query = query.or(`upi_id.eq.${recipientUpiId},phone.eq.${phoneNum}`);
     } else {
       query = query.eq('upi_id', recipientUpiId);
@@ -451,6 +456,11 @@ async function handleSendUpi(e) {
     document.getElementById('sendUpiModal').style.display = 'none';
     const sendUpiForm = document.getElementById('sendUpiForm');
     if (sendUpiForm) sendUpiForm.reset();
+    const recipientUpiIdInput = document.getElementById('recipientUpiId');
+    if (recipientUpiIdInput) {
+      recipientUpiIdInput.readOnly = false;
+      delete recipientUpiIdInput.dataset.scannedRecipient;
+    }
     
     // Populate success receipt details
     const successUpiRecipient = document.getElementById('successUpiRecipient');

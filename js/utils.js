@@ -710,7 +710,7 @@ function parseUpiQr(decodedText) {
   const text = decodedText.trim();
   let parameters = new URLSearchParams();
 
-  if (/^upi:\/\/pay\?/i.test(text)) {
+  if (/^upi:\/\/pay\/?\?/i.test(text)) {
     parameters = new URLSearchParams(text.slice(text.indexOf('?') + 1));
   } else if (/^[^@\s?&]+@[^@\s?&]+$/.test(text)) {
     parameters.set('pa', text);
@@ -734,7 +734,7 @@ function parseUpiQr(decodedText) {
   });
   if (hasDuplicatePaymentField) return null;
 
-  const upiId = (values.pa || '').trim();
+  const upiId = (values.pa || '').trim().toLowerCase();
   if (!/^[^@\s?&]+@[^@\s?&]+$/.test(upiId)) return null;
 
   const amount = values.am || '';
@@ -1131,6 +1131,7 @@ function injectScanQrModals() {
         if (recipientUpiIdInput) {
           recipientUpiIdInput.value = upiAddress;
           recipientUpiIdInput.readOnly = true;
+          recipientUpiIdInput.dataset.scannedRecipient = 'true';
         }
         const amountInput = document.getElementById('upiSendAmount');
         if (amountInput && scannedQrPaymentDetails && scannedQrPaymentDetails.amount) {
@@ -1233,7 +1234,12 @@ async function handleShowQr(e) {
     document.getElementById('qrUserUpi').textContent = displayUpi;
     
     // Generate QR
-    const qrValue = `upi://pay?pa=${upiAddress}&pn=${encodeURIComponent(fullName)}&cu=INR`;
+    const qrParameters = new URLSearchParams({
+      pa: upiAddress,
+      pn: fullName,
+      cu: 'INR'
+    });
+    const qrValue = `upi://pay?${qrParameters.toString()}`;
     const canvas = document.getElementById('qrCanvas');
     
     const qr = new QRious({
