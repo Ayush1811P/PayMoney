@@ -814,7 +814,9 @@ function parseUpiQr(decodedText) {
           if (!Number.isInteger(nestedLength) || nestedIndex + 4 + nestedLength > value.length) break;
           const nestedValue = value.slice(nestedIndex + 4, nestedIndex + 4 + nestedLength);
           if (nestedTag === '01' || nestedTag === '02') {
-            emvTags.append('pa', nestedValue);
+            if (/^[a-z0-9._-]+@[a-z0-9.-]+$/i.test(nestedValue.trim())) {
+              emvTags.append('pa', nestedValue.trim());
+            }
           } else if (nestedTag === '03') {
             emvTags.append('pn', nestedValue);
           }
