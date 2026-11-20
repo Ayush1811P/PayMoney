@@ -833,8 +833,10 @@ function parseUpiQr(decodedText) {
   }
 
   if (!parameters.has('pa')) {
-    const upiMatch = text.match(/(?:^|[^a-z0-9._-])([a-z0-9][a-z0-9._-]{1,63}@[a-z0-9][a-z0-9.-]{1,31})/i);
-    if (upiMatch) parameters.set('pa', upiMatch[1]);
+    if (!/^000201/.test(text)) {
+      const upiMatch = text.match(/(?:^|[^a-z0-9._-])([a-z0-9][a-z0-9._-]{1,63}@[a-z0-9][a-z0-9.-]{1,31})/i);
+      if (upiMatch) parameters.set('pa', upiMatch[1]);
+    }
   }
 
   if (!parameters.has('pa')) {
