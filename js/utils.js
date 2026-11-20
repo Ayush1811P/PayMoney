@@ -556,11 +556,34 @@ function setupFileInputListener() {
               const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
               
               try {
-                await loadScript('https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js');
+                let code = null;
+
+                if ('BarcodeDetector' in window) {
+                  try {
+                    const detector = new BarcodeDetector({ formats: ['qr_code'] });
+                    const detected = await detector.detect(img);
+                    if (detected && detected.length > 0 && detected[0].rawValue) {
+                      code = { data: detected[0].rawValue };
+                    }
+                  } catch (detectorError) {
+                    console.warn('Native QR detector failed:', detectorError);
+                  }
+                }
+
+                if (code) {
+                  if (loadingBarContainer) loadingBarContainer.style.display = 'none';
+                  await onQrScanSuccess(code.data);
+                  return;
+                }
+
+                try {
+                  await loadScript('https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js');
+                } catch (jsQrPrimaryError) {
+                  await loadScript('https://unpkg.com/jsqr@1.4.0/dist/jsQR.min.js');
+                }
 
                 // Decode at several resolutions so screenshots and compressed gallery images work reliably.
                 const scales = [1, 2, 3];
-                let code = null;
                 for (const scale of scales) {
                   const decodeCanvas = document.createElement('canvas');
                   decodeCanvas.width = Math.min(canvas.width * scale, 1600);
@@ -1211,13 +1234,24 @@ function injectScanQrModals() {
 
 function canvasToPngFile(canvas, fileName) {
   return new Promise((resolve, reject) => {
-    canvas.toBlob((blob) => {
-      if (!blob) {
-        reject(new Error('Could not create QR image'));
-        return;
+    if (typeof canvas.toBlob === 'function') {
+      canvas.toBlob((blob) => {
+        if (!blob) {
+          reject(new Error('Could not create QR image'));
+          return;
+        }
+        resolve(new File([blob], fileName, { type: 'image/png' }));
+      }, 'image/png', 1);
+    } else {
+      try {
+        const byteString = atob(canvas.toDataURL('image/png').split(',')[1]);
+        const bytes = new Uint8Array(byteString.length);
+        for (let i = 0; i < byteString.length; i++) bytes[i] = byteString.charCodeAt(i);
+        resolve(new File([bytes], fileName, { type: 'image/png' }));
+      } catch (error) {
+        reject(error);
       }
-      resolve(new File([blob], fileName, { type: 'image/png' }));
-    }, 'image/png', 1);
+    }
   });
 }
 
@@ -1295,7 +1329,7 @@ async function handleShowQr(e) {
         const fileName = `${fullName.replace(/\s+/g, '_')}_paymoney_qr.png`;
         const qrFile = await canvasToPngFile(canvas, fileName);
 
-        if (navigator.share && navigator.canShare &&
+        if (typeof navigator.share === 'function' && typeof navigator.canShare === 'function' &&
             navigator.canShare({ files: [qrFile] })) {
           await navigator.share({
             files: [qrFile],
