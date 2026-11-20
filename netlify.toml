@@ -11,14 +11,24 @@
   [headers.values]
     Content-Type = "application/vnd.android.package-archive"
     Content-Disposition = "attachment; filename=\"PayMoney.apk\""
-    Cache-Control = "public, max-age=31536000, immutable"
+    Cache-Control = "no-store, no-cache, must-revalidate"
 
 [[headers]]
   for = "/paymoney.apk"
   [headers.values]
     Content-Type = "application/vnd.android.package-archive"
     Content-Disposition = "attachment; filename=\"PayMoney.apk\""
-    Cache-Control = "public, max-age=31536000, immutable"
+    Cache-Control = "no-store, no-cache, must-revalidate"
+
+[[headers]]
+  for = "/js/*"
+  [headers.values]
+    Cache-Control = "no-cache, must-revalidate"
+
+[[headers]]
+  for = "/*.html"
+  [headers.values]
+    Cache-Control = "no-cache, must-revalidate"
 
 [[redirects]]
   from = "/paymoney.apk"
