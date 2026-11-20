@@ -584,17 +584,36 @@ function setupFileInputListener() {
 
                 // Decode at several resolutions so screenshots and compressed gallery images work reliably.
                 const scales = [1, 2, 3];
+                const rotations = [0, 90, 180, 270];
                 for (const scale of scales) {
-                  const decodeCanvas = document.createElement('canvas');
-                  decodeCanvas.width = Math.min(canvas.width * scale, 1600);
-                  decodeCanvas.height = Math.min(canvas.height * scale, 1600);
-                  const decodeContext = decodeCanvas.getContext('2d', { willReadFrequently: true });
-                  decodeContext.imageSmoothingEnabled = false;
-                  decodeContext.drawImage(canvas, 0, 0, decodeCanvas.width, decodeCanvas.height);
-                  const decodedImageData = decodeContext.getImageData(0, 0, decodeCanvas.width, decodeCanvas.height);
-                  code = jsQR(decodedImageData.data, decodedImageData.width, decodedImageData.height, {
-                    inversionAttempts: 'attemptBoth'
-                  });
+                  for (const rotation of rotations) {
+                    const decodeCanvas = document.createElement('canvas');
+                    const rotated = rotation === 90 || rotation === 270;
+                    decodeCanvas.width = rotated
+                      ? Math.min(canvas.height * scale, 1600)
+                      : Math.min(canvas.width * scale, 1600);
+                    decodeCanvas.height = rotated
+                      ? Math.min(canvas.width * scale, 1600)
+                      : Math.min(canvas.height * scale, 1600);
+                    const decodeContext = decodeCanvas.getContext('2d', { willReadFrequently: true });
+                    decodeContext.imageSmoothingEnabled = false;
+                    decodeContext.save();
+                    decodeContext.translate(decodeCanvas.width / 2, decodeCanvas.height / 2);
+                    decodeContext.rotate(rotation * Math.PI / 180);
+                    decodeContext.drawImage(
+                      canvas,
+                      -decodeCanvas.width / 2,
+                      -decodeCanvas.height / 2,
+                      decodeCanvas.width,
+                      decodeCanvas.height
+                    );
+                    decodeContext.restore();
+                    const decodedImageData = decodeContext.getImageData(0, 0, decodeCanvas.width, decodeCanvas.height);
+                    code = jsQR(decodedImageData.data, decodedImageData.width, decodedImageData.height, {
+                      inversionAttempts: 'attemptBoth'
+                    });
+                    if (code) break;
+                  }
                   if (code) break;
                 }
 
@@ -756,6 +775,9 @@ function parseUpiQr(decodedText) {
 
   if (/^upi:\/\/pay\/?\?/i.test(text)) {
     parameters = new URLSearchParams(text.slice(text.indexOf('?') + 1));
+  } else if (/^intent:\/\/pay\?/i.test(text)) {
+    const query = text.slice(text.indexOf('?') + 1).split('#Intent')[0];
+    parameters = new URLSearchParams(query);
   } else if (/^[^@\s?&]+@[^@\s?&]+$/.test(text)) {
     parameters.set('pa', text);
     parameters.set('cu', 'INR');
@@ -1069,6 +1091,14 @@ function injectScanQrModals() {
             <span>OR</span>
             <span style="height: 1px; background: var(--border-color); flex: 1;"></span>
           </div>
+
+          <div class="form-group" style="text-align: left; margin-bottom: var(--spacing-md);">
+          <label for="manualQrValue" style="display: block; font-weight: 500; margin-bottom: 8px; font-size: 0.95rem; color: var(--text-dark);">Paste QR content or UPI ID</label>
+          <div style="display: flex; gap: 8px;">
+            <input type="text" id="manualQrValue" placeholder="upi://pay?pa=... or name@paymoney" style="flex: 1; min-width: 0;">
+            <button type="button" id="manualQrSubmitBtn" class="btn btn-primary">Use</button>
+          </div>
+          </div>
           
           <!-- Styled Gallery Upload -->
           <div class="form-group" style="text-align: left; margin-bottom: 0;" id="scannerUploadControls">
@@ -1125,6 +1155,19 @@ function injectScanQrModals() {
   const retryCameraBtn = document.getElementById('retryCameraBtn');
   if (retryCameraBtn) {
     retryCameraBtn.addEventListener('click', startCameraScanner);
+  }
+
+  const manualQrValue = document.getElementById('manualQrValue');
+  const manualQrSubmitBtn = document.getElementById('manualQrSubmitBtn');
+  if (manualQrValue && manualQrSubmitBtn) {
+    manualQrSubmitBtn.addEventListener('click', () => {
+      const qrValue = manualQrValue.value.trim();
+      if (!qrValue) {
+        showNotification('Paste a UPI QR link or UPI ID first.', 'error');
+        return;
+      }
+      onQrScanSuccess(qrValue);
+    });
   }
   
   // Wire up close button specifically for Scan Modal
